@@ -1,0 +1,114 @@
+<div class="app-shell">
+  <aside class="sidebar" [class.mobile-open]="showMobileNav()">
+    <div class="brand"><span class="brand-mark">+</span><span>CareFlow</span></div>
+    <button class="close-nav" (click)="showMobileNav.set(false)" aria-label="Close menu">×</button>
+    <nav aria-label="Main navigation">
+      <p class="nav-label">WORKSPACE</p>
+      @for (item of navItems(); track item.label) {
+        <button class="nav-item" [class.active]="view() === item.label" (click)="openView(item.label)">
+          <span class="nav-icon">{{ item.icon }}</span>{{ item.label }}
+        </button>
+      }
+    </nav>
+    <div class="sidebar-help">
+      <span class="help-icon">?</span>
+      <div><strong>Need help?</strong><small>View clinic support</small></div>
+    </div>
+    <div class="user-card">
+      <span class="avatar doctor">DR</span>
+      <div><strong>{{ role() === 'Doctor' ? 'Dr. Rafael Cruz' : role() + ' Demo' }}</strong><small>{{ role() }}</small></div>
+      <span>⋮</span>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <button class="menu-button" (click)="showMobileNav.set(true)" aria-label="Open menu">☰</button>
+      <div class="search"><span>⌕</span><input [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search patients, appointments..." aria-label="Search"></div>
+      <div class="header-actions">
+        <label class="role-switcher">View as
+          <select [ngModel]="role()" (ngModelChange)="selectRole($any($event))">
+            @for (item of roles; track item) { <option [value]="item">{{ item }}</option> }
+          </select>
+        </label>
+        <button class="icon-button" aria-label="Notifications">♢<span class="notification-dot"></span></button>
+      </div>
+    </header>
+
+    <section class="content">
+      @if (view() === 'Dashboard') {
+        <div class="page-heading">
+          <div><p class="eyebrow">SATURDAY, JULY 11</p><h1>Good morning, {{ role() === 'Doctor' ? 'Dr. Cruz' : role() }}</h1><p>Here’s what’s happening at your clinic today.</p></div>
+          <button class="primary" (click)="openView('Appointments')"><span>＋</span> New appointment</button>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat"><span class="stat-icon teal">▣</span><div><small>Today's appointments</small><strong>12</strong><em><b>↑ 8%</b> from yesterday</em></div></article>
+          <article class="stat"><span class="stat-icon blue">♧</span><div><small>Patients checked in</small><strong>8</strong><em>4 still expected</em></div></article>
+          <article class="stat"><span class="stat-icon orange">◷</span><div><small>Average wait time</small><strong>14 <i>min</i></strong><em><b>↓ 3 min</b> this week</em></div></article>
+          <article class="stat"><span class="stat-icon violet">Rx</span><div><small>Prescriptions issued</small><strong>6</strong><em>2 need review</em></div></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel schedule-panel">
+            <div class="panel-header"><div><h2>Today’s schedule</h2><p>{{ visibleAppointments().length }} appointments · July 11, 2026</p></div><button class="text-button" (click)="openView('Appointments')">View calendar →</button></div>
+            <div class="appointment-list">
+              @for (appointment of visibleAppointments(); track appointment.time) {
+                <article class="appointment">
+                  <time>{{ appointment.time }}</time><span class="avatar" [ngClass]="appointment.color">{{ appointment.initials }}</span>
+                  <div class="patient-info"><strong>{{ appointment.patient }}</strong><span>{{ appointment.reason }} · {{ appointment.type }}</span></div>
+                  <span class="status" [class]="appointment.status.toLowerCase().replace(' ', '-')"><i></i>{{ appointment.status }}</span>
+                  <button class="more" aria-label="Appointment actions">⋮</button>
+                </article>
+              } @empty { <div class="empty">No appointments match your search.</div> }
+            </div>
+          </section>
+
+          <aside class="right-column">
+            <section class="panel next-patient">
+              <div class="panel-header"><div><p class="eyebrow">UP NEXT · 10:30 AM</p><h2>Patient overview</h2></div><span class="status waiting"><i></i>Waiting</span></div>
+              <div class="patient-profile"><span class="avatar blue large">JW</span><div><h3>James Wilson</h3><p>PT-1057 · 31 years · Male</p></div></div>
+              <div class="vitals"><div><span>Blood pressure</span><strong>128/82</strong><small>mmHg</small></div><div><span>Heart rate</span><strong>72</strong><small>bpm</small></div><div><span>Temperature</span><strong>36.7°</strong><small>Celsius</small></div></div>
+              <div class="clinical-alert"><span>!</span><div><strong>Penicillin allergy</strong><p>Severe reaction documented Mar 2022</p></div></div>
+              <div class="button-row"><button class="secondary" (click)="openView('Patients')">View medical history</button><button class="primary" (click)="showPrescription.set(true)">Start consultation</button></div>
+            </section>
+          </aside>
+        </div>
+
+        <section class="panel recent-panel">
+          <div class="panel-header"><div><h2>Recent patients</h2><p>Patients you’ve recently consulted</p></div><button class="text-button" (click)="openView('Patients')">View all patients →</button></div>
+          <div class="patient-table">
+            @for (patient of recentPatients; track patient.id) {
+              <article><div class="identity"><span class="avatar" [ngClass]="patient.color">{{ patient.initials }}</span><div><strong>{{ patient.name }}</strong><small>{{ patient.id }} · {{ patient.age }} years</small></div></div><span>{{ patient.condition }}</span><span class="last-visit">Last visit <b>{{ patient.last }}</b></span><button (click)="openView('Patients')">Open record</button></article>
+            }
+          </div>
+        </section>
+      } @else {
+        <div class="page-heading subpage"><div><p class="eyebrow">CLINIC WORKSPACE</p><h1>{{ view() }}</h1><p>{{ view() === 'Patients' ? 'Review demographics, allergies, conditions, and consultation history.' : view() === 'Prescriptions' ? 'Create, review, and print safe patient prescriptions.' : 'Manage clinic ' + view().toLowerCase() + ' securely.' }}</p></div><button class="primary" (click)="view() === 'Prescriptions' ? showPrescription.set(true) : openView('Dashboard')">{{ view() === 'Prescriptions' ? '+ New prescription' : '← Back to dashboard' }}</button></div>
+        <section class="panel placeholder-panel">
+          <div class="placeholder-icon">{{ view() === 'Prescriptions' ? 'Rx' : view() === 'Patients' ? '♧' : '▣' }}</div>
+          <h2>{{ view() }} workspace</h2>
+          <p>This role-aware module is ready to connect to the NestJS API. Access is limited based on the selected account role.</p>
+          @if (view() === 'Prescriptions') { <button class="primary" (click)="showPrescription.set(true)">Create sample prescription</button> }
+        </section>
+      }
+    </section>
+  </main>
+</div>
+
+@if (showPrescription()) {
+  <div class="modal-backdrop" (click)="showPrescription.set(false)">
+    <section class="prescription-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="rx-title">
+      <button class="modal-close" (click)="showPrescription.set(false)" aria-label="Close">×</button>
+      <div class="rx-paper">
+        <header><div class="brand"><span class="brand-mark">+</span><span>CareFlow Clinic</span></div><div><strong>Dr. Rafael Cruz, MD</strong><small>Internal Medicine · License #1234567</small></div></header>
+        <div class="rx-patient"><span><small>PATIENT</small><strong>James Wilson</strong></span><span><small>AGE / SEX</small><strong>31 / Male</strong></span><span><small>DATE</small><strong>July 11, 2026</strong></span></div>
+        <div class="rx-symbol">℞</div>
+        <div class="medicine"><h3>Amoxicillin 500 mg capsule</h3><p>Take one (1) capsule by mouth every 8 hours for 7 days.</p><small>Quantity: 21 capsules · No refill</small></div>
+        <div class="warning">Demo only: this sample intentionally conflicts with the patient’s recorded penicillin allergy and must not be issued.</div>
+        <footer><div><span class="signature">Rafael Cruz</span><small>Physician signature</small></div><div class="clinic-address">CareFlow Medical Clinic<br>12 Wellness Avenue, Manila<br>+63 2 8123 4567</div></footer>
+      </div>
+      <div class="modal-actions"><button class="secondary" (click)="showPrescription.set(false)">Cancel</button><button class="primary" (click)="printPrescription()">Print prescription</button></div>
+    </section>
+  </div>
+}

@@ -1,0 +1,15 @@
+{
+  "hash": "3d98dce2",
+  "configHash": "f36c2ec8",
+  "lockfileHash": "77b21393",
+  "browserHash": "4f246461",
+  "optimized": {
+    "zone.js": {
+      "src": "../../../../../../node_modules/zone.js/fesm2015/zone.js",
+      "file": "zone__js.js",
+      "fileHash": "de2942d5",
+      "needsInterop": true
+    }
+  },
+  "chunks": {}
+}

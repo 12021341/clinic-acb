@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en" data-beasties-container>
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACB Pedicare Clinic Management</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e3a8a;
+      --primary-soft: #eaf2ff;
+      --secondary: #0f766e;
+      --secondary-soft: #ecfdf5;
+      --accent: #38bdf8;
+      --danger: #dc2626;
+      --success: #15803d;
+      --warning: #b45309;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --text: #172033;
+      --muted: #64748b;
+      --border: #e5eaf1;
+      --shadow: 0 10px 28px rgba(15, 23, 42, .06);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    .hidden { display: none !important; }
+
+    .login-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #f4f7fb;
+    }
+
+    .login-brand {
+      display: none;
+    }
+
+    .login-brand::after {
+      display: none;
+    }
+
+    .brand-badge {
+      width: fit-content;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(255,255,255,.9);
+      color: var(--primary-dark);
+      font-weight: 700;
+      box-shadow: var(--shadow);
+    }
+
+    .login-brand h1 {
+      font-size: clamp(42px, 6vw, 72px);
+      line-height: .98;
+      margin: 26px 0 18px;
+      letter-spacing: -3px;
+    }
+
+    .login-brand p {
+      max-width: 600px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.7;
+    }
+
+    .feature-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .mini-feature {
+      padding: 16px;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(255,255,255,.95);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .mini-feature strong { display: block; margin-bottom: 6px; }
+    .mini-feature span { color: var(--muted); font-size: 13px; }
+
+    .login-panel {
+      width: 100%;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .login-card {
+      width: min(400px, 100%);
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .login-card h2 { margin: 0 0 8px; font-size: 30px; }
+    .login-card > p { color: var(--muted); margin-top: 0; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      outline: none;
+      transition: .2s ease;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+    }
+
+    .textarea { min-height: 100px; resize: vertical; }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 15px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: .2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: var(--primary-dark); }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: var(--secondary); color: var(--primary-dark); }
+    .btn-ghost { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .btn-full { width: 100%; }
+
+    .demo-note {
+      margin-top: 18px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      background: var(--primary-soft);
+      color: #1e40af;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 270px 1fr;
+    }
+
+    .sidebar {
+      background: #ffffff;
+      color: var(--text);
+      padding: 22px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 0 8px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 20px;
+    }
+
+    .logo strong { display: block; font-size: 18px; }
+    .logo span { color: var(--muted); font-size: 12px; }
+
+    .nav-section-title {
+      padding: 22px 12px 8px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 0;
+      background: transparent;
+      color: #475569;
+      padding: 11px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+
+    .nav-icon { width: 24px; text-align: center; }
+
+    .sidebar-footer {
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #f8fbff;
+    }
+
+    .sidebar-footer small { color: var(--muted); display: block; margin-bottom: 8px; }
+
+    .main {
+      min-width: 0;
+      padding: 24px 30px 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 24px;
+      padding: 12px 0;
+    }
+
+    .search {
+      width: min(460px, 100%);
+      position: relative;
+    }
+
+    .search input {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 13px 15px 13px 42px;
+      outline: none;
+    }
+
+    .search span {
+      position: absolute;
+      left: 15px;
+      top: 12px;
+      color: var(--muted);
+    }
+
+    .user-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .role-pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--secondary-soft);
+      color: #0f766e;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #c7d2fe, #99f6e4);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .page-header h2 { margin: 0 0 6px; font-size: 28px; letter-spacing: -.02em; }
+    .page-header p { margin: 0; color: var(--muted); }
+
+    .hero-card {
+      background: #ffffff;
+      color: var(--text);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--primary);
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .hero-card h3 { font-size: 27px; margin: 0 0 8px; }
+    .hero-card p { margin: 0; color: var(--muted); max-width: 620px; }
+    .hero-card .btn { background: var(--primary); color: #fff; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card, .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card { padding: 18px; min-height: 132px; }
+    .stat-top { display: flex; justify-content: space-between; align-items: center; }
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+
+    .stat-card strong { display: block; font-size: 26px; margin: 14px 0 4px; }
+    .stat-card span { color: var(--muted); font-size: 13px; }
+    .trend-up { color: var(--success) !important; font-weight: 800; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 20px;
+    }
+
+    .grid-equal {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .card { padding: 20px; }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card-header h3 { margin: 0; font-size: 18px; }
+    .card-header p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 800;
+      background: var(--surface-2);
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #f8fbff; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 11px;
+    }
+
+    .status-success { background: #ecfdf5; color: #047857; }
+    .status-warning { background: #fff7ed; color: #b45309; }
+    .status-info { background: #eff6ff; color: #1d4ed8; }
+    .status-danger { background: #fef2f2; color: #b91c1c; }
+
+    .timeline { display: grid; gap: 14px; }
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 14px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      margin-top: 5px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 5px var(--primary-soft);
+    }
+
+    .timeline-item strong { display: block; }
+    .timeline-item p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .form-grid .full { grid-column: 1 / -1; }
+
+    .section-title {
+      margin: 24px 0 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 16px;
+    }
+
+    .pill-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .appointment {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .appointment:last-child { border-bottom: 0; }
+    .appointment .time { color: var(--primary-dark); font-weight: 800; min-width: 74px; }
+    .appointment .meta { flex: 1; }
+    .appointment .meta strong { display: block; }
+    .appointment .meta span { color: var(--muted); font-size: 12px; }
+
+    .prescription-paper {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .rx-head {
+      padding: 24px;
+      background: linear-gradient(135deg,#eff6ff,#ffffff);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .rx-mark {
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .rx-body { padding: 24px; }
+    .medicine-row {
+      display: grid;
+      grid-template-columns: 1.25fr .65fr .9fr .7fr auto;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .result-card {
+      border-left: 4px solid var(--secondary);
+      background: #f0fdfa;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .record-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .summary-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .summary-box span { display: block; color: var(--muted); font-size: 12px; }
+    .summary-box strong { margin-top: 5px; display: block; }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: #0f172a;
+      color: var(--primary-dark);
+      padding: 14px 18px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: .25s ease;
+      z-index: 50;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .mobile-menu { display: none; }
+
+    @media (max-width: 1050px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .grid-2, .grid-equal { grid-template-columns: 1fr; }
+      .record-summary { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 820px) {
+      .login-screen { grid-template-columns: 1fr; }
+      .login-brand { display: none; }
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        left: -290px;
+        z-index: 30;
+        width: 270px;
+        transition: .25s ease;
+      }
+      .sidebar.open { left: 0; }
+      .mobile-menu { display: inline-flex; }
+      .main { padding: 18px; }
+      .topbar { align-items: flex-start; }
+      .search { display: none; }
+      .form-grid, .stats-grid { grid-template-columns: 1fr; }
+      .medicine-row { grid-template-columns: 1fr; }
+      .hero-card { align-items: flex-start; flex-direction: column; }
+      .page-header { align-items: flex-start; flex-direction: column; }
+      .feature-strip { grid-template-columns: 1fr; }
+    }
+
+    .appointment-layout {
+      display: grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 20px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .calendar-weekdays {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .calendar-day {
+      min-height: 72px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .calendar-day:hover {
+      border-color: var(--primary);
+      background: #f8fbff;
+    }
+
+    .calendar-day span {
+      display: block;
+      margin-top: 10px;
+      color: var(--primary-dark);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .selected-day {
+      background: var(--primary);
+      color: var(--primary-dark);
+      border-color: var(--primary);
+    }
+
+    .selected-day span { color: var(--primary-dark); }
+    .muted-day { color: var(--muted); background: #f8fafc; }
+
+    .appointment-list-redesign {
+      display: grid;
+      gap: 10px;
+    }
+
+    .appointment-row {
+      display: grid;
+      grid-template-columns: 72px 44px 1fr auto auto;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .appointment-timebox {
+      text-align: center;
+      padding-right: 12px;
+      border-right: 1px solid var(--border);
+    }
+
+    .appointment-timebox strong,
+    .appointment-timebox span { display: block; }
+
+    .appointment-timebox span {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .appointment-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+
+    .appointment-main strong,
+    .appointment-main span { display: block; }
+
+    .appointment-main span {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1050px) {
+      .appointment-layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .calendar-day { min-height: 54px; padding: 7px; font-size: 12px; }
+      .calendar-day span { display: none; }
+      .appointment-row {
+        grid-template-columns: 60px 40px 1fr;
+      }
+      .appointment-row .status,
+      .appointment-row .btn { grid-column: 3; width: fit-content; }
+    }
+
+
+    .card, .stat-card, .appointment-row, .calendar-day {
+      transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .card:hover, .stat-card:hover {
+      border-color: #d6e1f0;
+    }
+
+    .appointment-row:hover {
+      border-color: #bfdbfe;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, .06);
+    }
+
+    .sidebar-footer {
+      border: 1px solid var(--border);
+    }
+
+    .role-pill {
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+
+    .search input {
+      box-shadow: none;
+    }
+
+  
+    /* ACB Pedicare design system based on the supplied reference */
+    :root {
+      --primary: #0d8074;
+      --primary-dark: #123d38;
+      --primary-soft: #e9f6f2;
+      --secondary: #4879ae;
+      --secondary-soft: #e9f1fb;
+      --accent: #dc7b45;
+      --danger: #b75f50;
+      --success: #1b9b74;
+      --warning: #b67b29;
+      --bg: #f5f8f7;
+      --surface: #ffffff;
+      --surface-2: #f7faf9;
+      --text: #304944;
+      --muted: #81908d;
+      --border: #e1eae8;
+      --shadow: 0 2px 4px rgba(41,77,70,.06);
+      --radius: 12px;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: "DM Sans", Arial, sans-serif; font-size: 14px; }
+    h1,h2,h3,.logo strong,.stat-card strong { font-family: "Manrope", "DM Sans", sans-serif; }
+
+    .app { grid-template-columns: 236px 1fr; }
+    .sidebar {
+      width: 236px; padding: 28px 16px 18px; background:#fff; border-right:1px solid var(--border);
+      box-shadow:none; color:var(--text);
+    }
+    .logo { padding:0 10px 22px; border-bottom:0; gap:10px; }
+    .logo-mark { width:31px; height:31px; border-radius:9px; background:var(--primary); color:#fff; font-size:20px; box-shadow:0 5px 12px rgba(13,133,120,.17); }
+    .logo strong { font-size:18px; font-weight:800; color:var(--primary-dark); }
+    .logo span { color:var(--muted); font-size:10px; }
+    .nav-section-title { padding:28px 13px 8px; color:#9aa9a6; font-size:10px; letter-spacing:.14em; }
+    .nav-item { padding:11px 13px; margin:3px 0; border-radius:9px; color:#5b6d69; font-size:13px; font-weight:600; }
+    .nav-item:hover,.nav-item.active { background:var(--primary-soft); color:#0b796c; }
+    .sidebar-footer { margin-top:20px; padding:13px; border:1px solid #e7efed; border-radius:10px; background:#f4f9f7; }
+
+    .main { padding:0 34px 50px; }
+    .topbar { position:sticky; top:0; z-index:10; height:76px; margin:0 -34px 28px; padding:0 34px; border-bottom:1px solid var(--border); background:rgba(255,255,255,.94); backdrop-filter:blur(8px); }
+    .search input { border:0; background:transparent; border-radius:0; padding:13px 15px 13px 38px; }
+    .search input:focus { box-shadow:none; }
+    .role-pill { background:var(--primary-soft); color:var(--primary); font-size:11px; }
+    .avatar { border-radius:50%; background:#dff2ec; color:#267565; }
+
+    .page-header { margin-bottom:27px; align-items:flex-end; }
+    .page-header h2 { color:var(--primary-dark); font-size:28px; font-weight:800; letter-spacing:-.035em; }
+    .page-header p { color:var(--muted); font-size:13px; }
+
+    .btn { padding:11px 16px; border-radius:8px; font-size:12px; font-weight:700; }
+    .btn-primary { background:var(--primary); color:#fff; box-shadow:0 4px 10px rgba(13,128,116,.13); }
+    .btn-primary:hover { background:#096e64; }
+    .btn-secondary { background:var(--primary-soft); color:var(--primary); }
+    .btn-ghost { background:#fff; border:1px solid #d8e5e2; color:#31524d; }
+
+    .hero-card { background:#fff; color:var(--text); border:1px solid #e0e9e7; border-left:4px solid var(--primary); border-radius:12px; box-shadow:var(--shadow); padding:22px; }
+    .hero-card h3 { color:var(--primary-dark); font-size:22px; }
+    .hero-card .btn { background:var(--primary); color:#fff; }
+
+    .stats-grid { gap:14px; margin-bottom:17px; }
+    .stat-card,.card { border:1px solid #e0e9e7; border-radius:12px; background:#fff; box-shadow:var(--shadow); }
+    .stat-card { min-height:118px; padding:18px; }
+    .stat-icon { width:37px; height:37px; border-radius:9px; background:#e7f6f2; color:#0d8879; }
+    .stat-card strong { color:#27443f; font-size:25px; }
+    .stat-card span { color:#83928f; font-size:11px; }
+
+    .card { padding:0; overflow:hidden; }
+    .card > :not(.card-header):not(.table-wrap) { margin-left:20px; margin-right:20px; }
+    .card-header { padding:19px 20px; margin:0; border-bottom:1px solid #e8efed; }
+    .card-header h3 { color:#26443f; font-size:15px; font-weight:700; }
+    .card-header p { color:#8c9997; font-size:10px; }
+    .table-wrap { padding:0 20px 12px; }
+    th { background:#f7faf9; color:#7f918d; font-size:10px; letter-spacing:.03em; }
+    th,td { padding:13px 12px; border-bottom:1px solid #edf2f1; }
+
+    .status { padding:5px 8px; border-radius:20px; font-size:9px; }
+    .status-success { background:#edf7f2; color:#3b8069; }
+    .status-warning { background:#fff5e6; color:#b67b29; }
+    .status-info { background:#e9f1fb; color:#4d78a5; }
+    .status-danger { background:#fff1ee; color:#b75f50; }
+
+    .input,.select,.textarea { border:1px solid #d6e3df; border-radius:8px; padding:11px 12px; color:#36514d; }
+    .input:focus,.select:focus,.textarea:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(13,128,116,.10); }
+    .form-group label { color:#526965; font-size:11px; }
+    .section-title { color:#26443f; font-family:"Manrope",sans-serif; }
+
+    .appointment { min-height:68px; padding:0 20px; border-bottom:1px solid #edf2f1; }
+    .appointment .time { color:#6e7d7a; font-size:10px; }
+    .appointment .meta strong { font-size:11px; }
+    .appointment .meta span { color:#8d9a97; font-size:9px; }
+
+    .appointment-layout { grid-template-columns:minmax(460px,1.5fr) minmax(300px,.65fr); gap:17px; align-items:start; }
+    .booking-card { order:-1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; padding-bottom:20px; }
+    .booking-card .card-header { grid-column:1 / -1; margin-bottom:20px; background:linear-gradient(135deg,#e9f6f2,#f8fcfb); border-bottom-color:#d7ebe6; }
+    .booking-card > .form-group { margin-left:20px; margin-right:0; }
+    .booking-card > .form-group:nth-of-type(4),
+    .booking-card > .form-group:nth-of-type(6),
+    .booking-card > .form-grid,
+    .booking-card > .btn-full { grid-column:1 / -1; margin-left:20px; margin-right:20px; }
+    .booking-card > .form-group:nth-of-type(3) { margin-left:0; margin-right:20px; }
+    .booking-card > .btn-full { min-height:46px; font-size:13px; }
+    .appointment-calendar { order:2; }
+    .appointment-calendar .card-header { align-items:flex-start; flex-direction:column; }
+    .calendar-day { min-height:48px; padding:6px 3px; border:1px solid #e1eae8; border-radius:8px; font-size:11px; }
+    .calendar-day span { font-size:7px; }
+    .calendar-day:hover { border-color:#9fc9c2; background:#f4f9f7; }
+    .selected-day { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .appointment-row { border:0; border-bottom:1px solid #edf2f1; border-radius:0; padding:14px 20px; }
+    .appointment-row:hover { background:#f9fbfa; box-shadow:none; }
+    .appointment-avatar { border-radius:50%; background:#dff2ec; color:#267565; }
+
+    .prescription-paper { border:1px solid #e0e9e7; border-radius:12px; box-shadow:var(--shadow); }
+    .rx-head { background:#f7faf9; border-bottom:2px solid var(--primary); }
+    .rx-mark { color:var(--primary); }
+    .result-card { border-left-color:var(--primary); background:#f4f9f7; }
+    .patient-result-banner { display:flex; align-items:center; gap:12px; margin-bottom:17px; padding:14px 18px; border:1px solid #dce8e5; border-radius:12px; background:#fff; box-shadow:var(--shadow); }
+    .patient-result-banner .avatar { width:42px; height:42px; flex:0 0 auto; }
+    .patient-result-banner div { display:flex; flex-direction:column; gap:2px; }
+    .patient-result-banner span:not(.avatar) { color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+    .patient-result-banner strong { color:var(--primary-dark); font:700 15px "Manrope",sans-serif; }
+    .patient-result-banner small { color:var(--muted); font-size:10px; }
+    .results-hero { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:17px; padding:20px 22px; border:1px solid #dce8e5; border-radius:12px; background:linear-gradient(135deg,#ffffff 58%,#edf8f5); box-shadow:var(--shadow); }
+    .results-patient { display:flex; align-items:center; gap:14px; }
+    .results-patient .avatar { width:52px; height:52px; font-size:13px; }
+    .results-patient .label { color:var(--primary); font-size:9px; font-weight:800; letter-spacing:.12em; }
+    .results-patient h3 { margin:3px 0; color:var(--primary-dark); font-size:20px; }
+    .results-patient p { margin:0; color:var(--muted); font-size:11px; }
+    .results-demographics { display:flex; gap:28px; }
+    .results-demographics div { display:flex; flex-direction:column; gap:3px; }
+    .results-demographics span { color:var(--muted); font-size:9px; text-transform:uppercase; letter-spacing:.08em; }
+    .results-demographics strong { color:#36514d; font-size:12px; }
+    .results-layout { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr); gap:17px; align-items:start; }
+    .clinical-summary { padding-bottom:18px; }
+    .diagnosis-block { margin:0 20px 16px!important; padding:16px; border:1px solid #d9eae6; border-left:4px solid var(--primary); border-radius:9px; background:#f6fbf9; }
+    .diagnosis-block small { color:var(--primary); font-size:9px; font-weight:800; letter-spacing:.1em; }
+    .diagnosis-block h4 { margin:6px 0; color:var(--primary-dark); font:700 15px "Manrope",sans-serif; }
+    .diagnosis-block p { margin:0; color:var(--muted); font-size:11px; line-height:1.55; }
+    .vital-strip { display:grid; grid-template-columns:repeat(3,1fr); margin:0 20px 16px!important; border:1px solid #e4ecea; border-radius:9px; background:#f9fbfa; }
+    .vital-strip div { padding:13px; text-align:center; border-right:1px solid #e4ecea; }
+    .vital-strip div:last-child { border:0; }
+    .vital-strip span { display:block; color:var(--muted); font-size:9px; }
+    .vital-strip strong { display:block; margin-top:4px; color:#304944; font:700 14px "Manrope",sans-serif; }
+    .doctor-note { margin:0 20px!important; padding:13px 14px; border-radius:8px; background:#f7faf9; color:#60736f; font-size:11px; line-height:1.55; }
+    .prescription-card { padding-bottom:18px; }
+    .medicine-item { display:grid; grid-template-columns:34px 1fr; gap:11px; margin:0 20px 10px!important; padding:13px; border:1px solid #e4ecea; border-radius:9px; }
+    .medicine-icon { display:grid; place-items:center; width:34px; height:34px; border-radius:9px; background:#e9f1fb; color:#4d78a5; font-weight:800; }
+    .medicine-item h4 { margin:0 0 3px; color:#304944; font-size:12px; }
+    .medicine-item p { margin:0; color:var(--muted); font-size:10px; }
+    .medicine-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .medicine-tags span { padding:4px 7px; border-radius:12px; background:#f4f9f7; color:#54706b; font-size:8px; font-weight:700; }
+    .followup-box { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:16px 20px 0!important; padding:12px 13px; border-radius:9px; background:#fff7e9; color:#8d672d; font-size:10px; }
+    .results-labs { margin-top:17px; }
+    .results-vaccines { margin-top:17px; }
+    .results-downloads { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
+    .results-downloads .btn { display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+    .user-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 20px; border-bottom:1px solid var(--border); }
+    .user-search { position:relative; width:min(360px,100%); }
+    .user-search span { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); }
+    .user-search .input { padding-left:36px; }
+    .user-filters { display:flex; gap:8px; }
+    .user-filters .select { min-width:130px; }
+    .user-identity { display:flex; align-items:center; gap:10px; }
+    .user-identity .avatar { width:32px; height:32px; }
+    .user-identity div { display:flex; flex-direction:column; }
+    .user-identity small { color:var(--muted); font-size:9px; }
+    .user-actions { display:flex; gap:6px; }
+    .user-actions .btn { padding:7px 9px; font-size:10px; }
+    .user-modal { position:fixed; inset:0; z-index:100; display:none; place-items:center; padding:20px; background:rgba(18,61,56,.55); backdrop-filter:blur(3px); }
+    .user-modal.open { display:grid; }
+    .user-modal-card { width:min(560px,100%); max-height:92vh; overflow:auto; padding:0 22px 22px; border-radius:14px; background:#fff; box-shadow:0 24px 70px rgba(10,39,34,.28); }
+    .user-modal-head { display:flex; align-items:center; justify-content:space-between; margin:0 -22px 20px; padding:18px 22px; border-bottom:1px solid var(--border); }
+    .user-modal-head h3 { margin:0; color:var(--primary-dark); }
+    .modal-close { border:0; background:transparent; color:var(--muted); font-size:24px; cursor:pointer; }
+    .user-modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:6px; }
+    @media(max-width:700px){.user-toolbar{align-items:stretch;flex-direction:column}.user-search{width:100%}.user-filters{width:100%}.user-filters .select{flex:1;min-width:0}.user-actions{flex-wrap:wrap}}
+    .test-name { display:flex; align-items:center; gap:9px; }
+    .test-icon { display:grid; place-items:center; width:28px; height:28px; border-radius:8px; background:#edf7f2; color:#3b8069; font-size:12px; }
+    @media(max-width:900px){.results-layout{grid-template-columns:1fr}.results-hero{align-items:flex-start;flex-direction:column}.results-demographics{width:100%;justify-content:space-between}}
+    @media(max-width:560px){.results-demographics{display:grid;grid-template-columns:1fr 1fr;gap:14px}.vital-strip{grid-template-columns:1fr}.vital-strip div{border-right:0;border-bottom:1px solid #e4ecea}.vital-strip div:last-child{border:0}}
+    .summary-box { background:#f7faf9; border-color:#e4ecea; border-radius:9px; }
+    .pill { background:#f4f9f7; border-color:#dce8e5; color:#47645f; }
+    .demo-note { background:#e9f6f2 !important; color:#0b796c !important; }
+
+    .login-screen { background:#f5f8f7; }
+    .login-card { width:min(400px,100%); border:1px solid #e0e9e7; border-radius:14px; box-shadow:0 12px 35px rgba(23,58,53,.08); }
+    .login-card h2 { color:var(--primary-dark); font-family:"Manrope",sans-serif; }
+
+    @media(max-width:820px){
+      .app{display:block}.sidebar{width:236px}.main{padding:0 16px 40px}.topbar{margin:0 -16px 24px;padding:0 16px}.appointment-layout{grid-template-columns:1fr}
+      .booking-card{grid-template-columns:1fr}.booking-card > .form-group{grid-column:1;margin-left:20px !important;margin-right:20px !important}
+    }
+
+  </style>
+<link rel="stylesheet" href="styles-5INURTSO.css"></head>
+<body>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-brand">
+      <div class="brand-badge">ACB Pedicare Clinic Suite</div>
+      <h1>Healthcare,<br>made human.</h1>
+      <p>A calm, secure, and efficient clinic experience for patients, doctors, secretaries, and administrators.</p>
+      <div class="feature-strip">
+        <div class="mini-feature"><strong>Secure RBAC</strong><span>Role-based access for every clinic user.</span></div>
+        <div class="mini-feature"><strong>Connected Records</strong><span>Visits, vaccines, prescriptions, and results.</span></div>
+        <div class="mini-feature"><strong>Faster Care</strong><span>Appointments, queues, and follow-ups in one place.</span></div>
+      </div>
+    </div>
+    <div class="login-panel">
+      <div class="login-card">
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="width:52px;height:52px;border-radius:16px;background:var(--primary);color:#fff;display:grid;place-items:center;margin:0 auto 14px;font-size:24px;font-weight:700">✚</div>
+          <div style="font-size:22px;font-weight:800">ACB Pedicare Clinic</div>
+          <div style="color:var(--muted);font-size:13px;margin-top:4px">Secure clinic management</div>
+        </div>
+        <h2 style="text-align:center;font-size:24px">Welcome back</h2>
+        <p style="text-align:center">Sign in to access your clinic workspace.</p>
+
+        <div class="form-group">
+          <label for="roleSelect">User role</label>
+          <select class="select" id="roleSelect">
+            <option value="patient">Patient</option>
+            <option value="doctor">Doctor</option>
+            <option value="secretary">Secretary</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Email address</label>
+          <input class="input" type="email" value="demo@careflow.clinic">
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input class="input" type="password" value="password123">
+        </div>
+
+        <button class="btn btn-primary btn-full" onclick="login()">Sign in securely</button>
+        <div class="demo-note">Choose a role to preview its dashboard and access permissions.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="app" class="app hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="logo">
+        <div class="logo-mark">✚</div>
+        <div><strong>ACB Pedicare</strong><span>Clinic</span></div>
+      </div>
+
+      <div class="nav-section-title">Workspace</div>
+      <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⌂</span> Dashboard</button>
+      <button class="nav-item role-all role-admin role-secretary role-doctor" data-page="patients"><span class="nav-icon">👥</span> Patient Records</button>
+      <button class="nav-item role-all" data-page="appointments"><span class="nav-icon">📅</span> Appointments</button>
+      <button class="nav-item role-doctor" data-page="prescription"><span class="nav-icon">℞</span> Create Prescription</button>
+      <button class="nav-item role-patient role-secretary role-doctor" data-page="results"><span class="nav-icon">🧾</span> Results & Prescriptions</button>
+      <button class="nav-item role-patient role-secretary role-doctor role-admin" data-page="vaccines"><span class="nav-icon">💉</span> Vaccine History</button>
+
+      <div class="nav-section-title">Management</div>
+      <button class="nav-item role-patient role-secretary role-admin" data-page="patient-form"><span class="nav-icon">📝</span> Patient Details</button>
+      <button class="nav-item role-admin role-secretary" data-page="billing"><span class="nav-icon">💳</span> Billing & Payments</button>
+      <button class="nav-item role-admin" data-page="users"><span class="nav-icon">🔐</span> Users & Roles</button>
+      <button class="nav-item role-admin role-doctor" data-page="analytics"><span class="nav-icon">📊</span> Clinic Analytics</button>
+
+      <div class="sidebar-footer">
+        <small>Signed in as</small>
+        <strong id="sidebarRole">Patient</strong>
+        <button class="btn btn-ghost btn-full" style="margin-top:12px;" onclick="logout()">Log out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <button class="btn btn-ghost mobile-menu" onclick="toggleSidebar()">☰</button>
+        <div class="search"><span>⌕</span><input placeholder="Search patients, records, appointments..."></div>
+        <div class="user-box">
+          <span id="rolePill" class="role-pill">Patient</span>
+          <div>
+            <strong id="userName">Alex Johnson</strong>
+            <div style="font-size:12px;color:var(--muted)">ACB Pedicare Clinic</div>
+          </div>
+          <div class="avatar" id="avatar">AJ</div>
+        </div>
+      </div>
+
+      <section id="dashboard" class="page active">
+        <div class="page-header">
+          <div>
+            <h2 id="dashboardTitle">Patient Dashboard</h2>
+            <p id="dashboardSubtitle">Your appointments, prescriptions, and health updates at a glance.</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button id="secretaryAddPatientBtn" class="btn btn-secondary hidden" onclick="showPage('patient-form')">+ Add Patient</button>
+            <button class="btn btn-primary" onclick="showPage('appointments')">Book appointment</button>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div>
+            <h3 id="heroGreeting">Good morning, Alex 👋</h3>
+            <p id="heroText">Your next checkup is scheduled for July 14 at 10:30 AM with Dr. Maria Santos.</p>
+          </div>
+          <button class="btn" onclick="showPage('results')">View medical summary</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-top"><span>Upcoming visits</span><div class="stat-icon">📅</div></div><strong id="stat1">2</strong><span class="trend-up">Next in 3 days</span></div>
+          <div class="stat-card"><div class="stat-top"><span>Active prescriptions</span><div class="stat-icon">℞</div></div><strong id="stat2">3</strong><span>1 refill due soon</span></div>
+          <div class="stat-card"><div class="stat-top"><span>Health records</span><div class="stat-icon">🩺</div></div><strong id="stat3">18</strong><span>Last updated today</span></div>
+          <div class="stat-card"><div class="stat-top"><span>Vaccines completed</span><div class="stat-icon">💉</div></div><strong id="stat4">7</strong><span>1 booster pending</span></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div><h3>Today’s schedule</h3><p>Appointments and important clinic activity</p></div><button class="btn btn-ghost" onclick="showPage('appointments')">View all</button></div>
+            <div id="scheduleList">
+              <div class="appointment"><div class="time">10:30 AM</div><div class="meta"><strong>General Checkup</strong><span>Dr. Maria Santos • Room 4</span></div><span class="status status-info">Confirmed</span></div>
+              <div class="appointment"><div class="time">2:00 PM</div><div class="meta"><strong>Laboratory Review</strong><span>ACB Pedicare Diagnostics</span></div><span class="status status-warning">Pending</span></div>
+              <div class="appointment"><div class="time">4:15 PM</div><div class="meta"><strong>Vaccination Follow-up</strong><span>Nurse Ana • Vaccine Center</span></div><span class="status status-success">Ready</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div><h3>Recent activity</h3><p>Latest updates in your account</p></div></div>
+            <div class="timeline">
+              <div class="timeline-item"><div class="dot"></div><div><strong>Prescription issued</strong><p>Amoxicillin 500 mg added by Dr. Santos.</p></div></div>
+              <div class="timeline-item"><div class="dot"></div><div><strong>Lab result uploaded</strong><p>Complete blood count is now available.</p></div></div>
+              <div class="timeline-item"><div class="dot"></div><div><strong>Appointment confirmed</strong><p>Your July 14 appointment is confirmed.</p></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="patient-form" class="page">
+        <div class="page-header">
+          <div><h2>Patient Details</h2><p>Create or update a complete patient profile.</p></div>
+          <button class="btn btn-primary" onclick="toast('Patient information saved successfully.')">Save patient</button>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title" style="margin-top:0">Personal information</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>First name</label><input class="input" value="Alex"></div>
+            <div class="form-group"><label>Last name</label><input class="input" value="Johnson"></div>
+            <div class="form-group"><label>Date of birth</label><input id="birthDateInput" class="input" type="date" value="1991-08-14" oninput="calculateAge()"></div>
+            <div class="form-group"><label>Age</label><input id="ageInput" class="input" value="34 years old" readonly></div>
+            <div class="form-group"><label>Sex</label><select class="select"><option>Male</option><option>Female</option><option>Prefer not to say</option></select></div>
+            <div class="form-group"><label>Mobile number</label><input class="input" value="+63 917 555 0198"></div>
+            <div class="form-group"><label>Email address</label><input class="input" value="alex.johnson@email.com"></div>
+            <div class="form-group full"><label>Home address</label><input class="input" value="Pasig City, Metro Manila"></div>
+          </div>
+
+          <h3 class="section-title">Father's information</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Father's name</label><input class="input" placeholder="Enter father's full name"></div>
+            <div class="form-group"><label>Age</label><input class="input" type="number" min="0" max="120" placeholder="Enter age"></div>
+            <div class="form-group"><label>Occupation</label><input class="input" placeholder="Enter occupation"></div>
+            <div class="form-group"><label>Contact number</label><input class="input" type="tel" placeholder="Enter contact number"></div>
+          </div>
+
+          <h3 class="section-title">Mother's information</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Mother's name</label><input class="input" placeholder="Enter mother's full name"></div>
+            <div class="form-group"><label>Age</label><input class="input" type="number" min="0" max="120" placeholder="Enter age"></div>
+            <div class="form-group"><label>Occupation</label><input class="input" placeholder="Enter occupation"></div>
+            <div class="form-group"><label>Contact number</label><input class="input" type="tel" placeholder="Enter contact number"></div>
+          </div>
+
+          <h3 class="section-title">Emergency contact</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Contact person</label><input class="input" value="Jamie Johnson"></div>
+            <div class="form-group"><label>Relationship</label><input class="input" value="Spouse"></div>
+            <div class="form-group"><label>Contact number</label><input class="input" value="+63 917 555 0112"></div>
+            <div class="form-group"><label>Preferred hospital</label><input class="input" value="St. Luke's Medical Center"></div>
+          </div>
+
+          <h3 class="section-title">Medical profile</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Blood type</label><select class="select"><option>O+</option><option>A+</option><option>B+</option><option>AB+</option></select></div>
+            <div class="form-group"><label>PhilHealth / Insurance ID</label><input class="input" value="CF-2026-000184"></div>
+            <div class="form-group full"><label>Known allergies</label><textarea class="textarea">Penicillin, shellfish</textarea></div>
+            <div class="form-group full"><label>Existing conditions</label><textarea class="textarea">Mild asthma, controlled hypertension</textarea></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="prescription" class="page">
+        <div class="page-header">
+          <div><h2>Create Prescription</h2><p>Issue a clear digital prescription and treatment plan.</p></div>
+          <div><button class="btn btn-ghost" onclick="toast('Draft saved.')">Save draft</button> <button class="btn btn-primary" onclick="toast('Prescription issued to patient.')">Issue prescription</button></div>
+        </div>
+
+        <div class="prescription-paper">
+          <div class="rx-head">
+            <div><h3 style="margin:0">ACB Pedicare Clinic</h3><p style="margin:6px 0 0;color:var(--muted)">12 Wellness Avenue, Makati City • +63 2 8555 1200</p></div>
+            <div class="rx-mark">℞</div>
+          </div>
+          <div class="rx-body">
+            <div class="record-summary">
+              <div class="summary-box"><span>Patient</span><strong>Alex Johnson</strong></div>
+              <div class="summary-box"><span>Date of birth</span><strong>August 14, 1991</strong></div>
+              <div class="summary-box"><span>Consultation date</span><strong>July 11, 2026</strong></div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group"><label>Diagnosis</label><input class="input" value="Acute upper respiratory infection"></div>
+              <div class="form-group"><label>Follow-up date</label><input class="input" type="date" value="2026-07-18"></div>
+            </div>
+
+            <h3 class="section-title">Medications</h3>
+            <div id="medicineRows">
+              <div class="medicine-row">
+                <input class="input" value="Amoxicillin 500 mg" placeholder="Medicine">
+                <input class="input" value="1 capsule" placeholder="Dosage">
+                <input class="input" value="Every 8 hours" placeholder="Frequency">
+                <input class="input" value="7 days" placeholder="Duration">
+                <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+              </div>
+              <div class="medicine-row">
+                <input class="input" value="Paracetamol 500 mg" placeholder="Medicine">
+                <input class="input" value="1 tablet" placeholder="Dosage">
+                <input class="input" value="As needed" placeholder="Frequency">
+                <input class="input" value="3 days" placeholder="Duration">
+                <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+              </div>
+            </div>
+            <button class="btn btn-ghost" onclick="addMedicine()">+ Add medication</button>
+
+            <h3 class="section-title">Instructions and notes</h3>
+            <textarea class="textarea">Take after meals. Complete the full antibiotic course. Increase fluid intake and rest. Return immediately if symptoms worsen.</textarea>
+          </div>
+        </div>
+      </section>
+
+      <section id="results" class="page">
+        <div class="page-header">
+          <div><h2>Results & Prescriptions</h2><p>Review consultation findings, laboratory results, and treatment plans.</p></div>
+          <div class="results-downloads">
+            <button class="btn btn-ghost" onclick="toast('Medical summary downloaded.')"><span>↓</span> Summary</button>
+            <button class="btn btn-ghost" onclick="toast('Medical certificate downloaded.')"><span>↓</span> Medical Certificate</button>
+            <button class="btn btn-primary" onclick="toast('Prescription downloaded.')"><span>↓</span> Prescription</button>
+          </div>
+        </div>
+
+        <div class="results-hero">
+          <div class="results-patient"><span class="avatar">AJ</span><div><span class="label">PATIENT MEDICAL SUMMARY</span><h3>Alex Johnson</h3><p>Patient ID: PT-20481</p></div></div>
+          <div class="results-demographics"><div><span>Age</span><strong>34 years</strong></div><div><span>Sex</span><strong>Male</strong></div><div><span>Blood type</span><strong>O+</strong></div><div><span>Allergy</span><strong style="color:#b75f50">Penicillin</strong></div></div>
+        </div>
+
+        <div class="results-layout">
+          <article class="card clinical-summary">
+            <div class="card-header"><div><h3>Latest consultation</h3><p>July 11, 2026 · Dr. Maria Santos</p></div><span class="status status-success">Completed</span></div>
+            <div class="diagnosis-block"><small>PRIMARY ASSESSMENT</small><h4>Acute upper respiratory infection</h4><p>No signs of pneumonia or severe respiratory distress. Symptoms are currently mild and stable.</p></div>
+            <div class="vital-strip"><div><span>Blood pressure</span><strong>124 / 82</strong></div><div><span>Temperature</span><strong>37.4 °C</strong></div><div><span>Heart rate</span><strong>78 bpm</strong></div></div>
+            <p class="doctor-note"><strong>Doctor’s notes:</strong> Mild throat inflammation and nasal congestion. Increase fluid intake, rest, and continue monitoring symptoms for seven days.</p>
+          </article>
+
+          <aside class="card prescription-card">
+            <div class="card-header"><div><h3>Active prescription</h3><p>RX-2026-0711 · Issued July 11</p></div><span class="status status-info">2 medicines</span></div>
+            <div class="medicine-item"><span class="medicine-icon">Rx</span><div><h4>Amoxicillin 500 mg</h4><p>Take one capsule every 8 hours.</p><div class="medicine-tags"><span>7 days</span><span>After meals</span><span>21 capsules</span></div></div></div>
+            <div class="medicine-item"><span class="medicine-icon">Rx</span><div><h4>Paracetamol 500 mg</h4><p>Take one tablet as needed for pain or fever.</p><div class="medicine-tags"><span>Max 3/day</span><span>3 days</span><span>As needed</span></div></div></div>
+            <div class="followup-box"><span><strong>Follow-up visit</strong><br>July 18, 2026 · 9:00 AM</span><button class="btn btn-ghost" onclick="showPage('appointments')">View</button></div>
+          </aside>
+        </div>
+
+        <div class="card results-labs">
+          <div class="card-header"><div><h3>Laboratory & diagnostic results</h3><p>Recent reports and clinical documents</p></div><span class="pill">3 records</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Test</th><th>Date</th><th>Result summary</th><th>Doctor</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td><div class="test-name"><span class="test-icon">🧪</span><strong>Complete Blood Count</strong></div></td><td>Jul 11, 2026</td><td>Within normal range</td><td>Dr. Santos</td><td><span class="status status-success">Normal</span></td><td><button class="btn btn-ghost" onclick="toast('Opening CBC report.')">View report</button></td></tr>
+                <tr><td><div class="test-name"><span class="test-icon">▧</span><strong>Chest X-ray</strong></div></td><td>Jun 19, 2026</td><td>No active lung disease</td><td>Dr. Cruz</td><td><span class="status status-success">Clear</span></td><td><button class="btn btn-ghost" onclick="toast('Opening X-ray report.')">View report</button></td></tr>
+                <tr><td><div class="test-name"><span class="test-icon">◫</span><strong>Lipid Profile</strong></div></td><td>Apr 02, 2026</td><td>LDL slightly elevated</td><td>Dr. Reyes</td><td><span class="status status-warning">Review</span></td><td><button class="btn btn-ghost" onclick="toast('Opening lipid profile.')">View report</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card results-vaccines">
+          <div class="card-header"><div><h3>Vaccine history</h3><p>Administered vaccines and upcoming boosters</p></div><button class="btn btn-ghost" onclick="showPage('vaccines')">View full history</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Vaccine</th><th>Dose</th><th>Date administered</th><th>Administered by</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><div class="test-name"><span class="test-icon">💉</span><strong>Influenza</strong></div></td><td>Annual dose</td><td>Mar 18, 2026</td><td>Nurse Ana Cruz</td><td><span class="status status-success">Completed</span></td></tr>
+                <tr><td><div class="test-name"><span class="test-icon">💉</span><strong>COVID-19</strong></div></td><td>Booster 2</td><td>Aug 14, 2025</td><td>Dr. Maria Santos</td><td><span class="status status-warning">Booster due</span></td></tr>
+                <tr><td><div class="test-name"><span class="test-icon">💉</span><strong>Tetanus</strong></div></td><td>Booster</td><td>Jan 10, 2024</td><td>Nurse Anne Lim</td><td><span class="status status-success">Valid</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="patients" class="page">
+        <div class="page-header">
+          <div><h2>Patient Records</h2><p>Search, review, and manage complete patient histories.</p></div>
+          <button class="btn btn-primary" onclick="showPage('patient-form')">+ Add patient</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div><h3>All patients</h3><p>2,468 registered patients</p></div>
+            <div class="pill-list"><span class="pill">All</span><span class="pill">Recently visited</span><span class="pill">Needs follow-up</span></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Patient ID</th><th>Name</th><th>Age</th><th>Contact</th><th>Last visit</th><th>Primary doctor</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>PT-20481</td><td><strong>Alex Johnson</strong></td><td>34</td><td>+63 917 555 0198</td><td>Jul 11, 2026</td><td>Dr. Santos</td><td><span class="status status-success">Active</span></td><td><button class="btn btn-ghost" onclick="showPage('results')">View record</button></td></tr>
+                <tr><td>PT-20477</td><td><strong>Bea Martinez</strong></td><td>28</td><td>+63 918 411 1032</td><td>Jul 10, 2026</td><td>Dr. Cruz</td><td><span class="status status-warning">Follow-up</span></td><td><button class="btn btn-ghost">View record</button></td></tr>
+                <tr><td>PT-20465</td><td><strong>Carlos Rivera</strong></td><td>46</td><td>+63 922 902 8841</td><td>Jul 09, 2026</td><td>Dr. Reyes</td><td><span class="status status-info">Monitoring</span></td><td><button class="btn btn-ghost">View record</button></td></tr>
+                <tr><td>PT-20411</td><td><strong>Diana Lim</strong></td><td>39</td><td>+63 917 121 4450</td><td>Jul 08, 2026</td><td>Dr. Santos</td><td><span class="status status-success">Active</span></td><td><button class="btn btn-ghost">View record</button></td></tr>
+                <tr><td>PT-20388</td><td><strong>Elijah Gomez</strong></td><td>52</td><td>+63 908 009 1182</td><td>Jul 05, 2026</td><td>Dr. Cruz</td><td><span class="status status-danger">Urgent review</span></td><td><button class="btn btn-ghost">View record</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="vaccines" class="page">
+        <div class="page-header">
+          <div><h2>Vaccine History</h2><p>Track administered vaccines, boosters, and upcoming doses.</p></div>
+          <button class="btn btn-primary" onclick="toast('Vaccine record added.')">+ Add vaccine record</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><span>Completed vaccines</span><strong>7</strong><span>Verified records</span></div>
+          <div class="stat-card"><span>Upcoming booster</span><strong>1</strong><span>Due Aug 14, 2026</span></div>
+          <div class="stat-card"><span>Last vaccine</span><strong>Mar 18</strong><span>Influenza 2026</span></div>
+          <div class="stat-card"><span>Record status</span><strong>Updated</strong><span class="trend-up">All documents complete</span></div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Vaccine</th><th>Dose</th><th>Date administered</th><th>Manufacturer</th><th>Lot number</th><th>Administered by</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Influenza</td><td>Annual dose</td><td>Mar 18, 2026</td><td>Sanofi</td><td>FLU26-A18</td><td>Nurse Ana Cruz</td><td><span class="status status-success">Completed</span></td></tr>
+                <tr><td>COVID-19</td><td>Booster 2</td><td>Aug 14, 2025</td><td>Pfizer</td><td>PF-88293</td><td>Dr. Maria Santos</td><td><span class="status status-warning">Booster due</span></td></tr>
+                <tr><td>Tetanus</td><td>Booster</td><td>Jan 10, 2024</td><td>GSK</td><td>TT-11024</td><td>Nurse Anne Lim</td><td><span class="status status-success">Valid</span></td></tr>
+                <tr><td>Hepatitis B</td><td>Dose 3</td><td>Sep 08, 2023</td><td>Merck</td><td>HB-20019</td><td>Dr. Cruz</td><td><span class="status status-success">Completed</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="appointments" class="page">
+        <div class="page-header">
+          <div><h2>Appointments</h2><p>Plan visits, manage the queue, and coordinate clinic schedules.</p></div>
+          <button class="btn btn-primary" onclick="toast('New appointment created.')">+ New appointment</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><span>Today</span><strong>12</strong><span>4 checked in</span></div>
+          <div class="stat-card"><span>Waiting</span><strong>3</strong><span>Average wait: 18 min</span></div>
+          <div class="stat-card"><span>Completed</span><strong>6</strong><span class="trend-up">On schedule</span></div>
+          <div class="stat-card"><span>Cancelled</span><strong>1</strong><span>Today</span></div>
+        </div>
+
+        <div class="appointment-layout">
+          <div class="card appointment-calendar">
+            <div class="card-header">
+              <div><h3>July 2026</h3><p>Select a date to view clinic appointments</p></div>
+              <div style="display:flex;gap:8px"><button class="btn btn-ghost">‹</button><button class="btn btn-ghost">Today</button><button class="btn btn-ghost">›</button></div>
+            </div>
+
+            <div class="calendar-grid calendar-weekdays">
+              <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            <div class="calendar-grid">
+              <button class="calendar-day muted-day">28</button><button class="calendar-day muted-day">29</button><button class="calendar-day muted-day">30</button>
+              <button class="calendar-day">1</button><button class="calendar-day">2</button><button class="calendar-day">3</button><button class="calendar-day">4</button>
+              <button class="calendar-day">5</button><button class="calendar-day">6</button><button class="calendar-day">7</button><button class="calendar-day">8</button><button class="calendar-day">9</button><button class="calendar-day">10</button>
+              <button class="calendar-day selected-day">11<span>12 visits</span></button>
+              <button class="calendar-day">12</button><button class="calendar-day">13</button><button class="calendar-day">14<span>8 visits</span></button><button class="calendar-day">15</button><button class="calendar-day">16</button><button class="calendar-day">17</button><button class="calendar-day">18</button>
+              <button class="calendar-day">19</button><button class="calendar-day">20</button><button class="calendar-day">21</button><button class="calendar-day">22</button><button class="calendar-day">23</button><button class="calendar-day">24</button><button class="calendar-day">25</button>
+              <button class="calendar-day">26</button><button class="calendar-day">27</button><button class="calendar-day">28</button><button class="calendar-day">29</button><button class="calendar-day">30</button><button class="calendar-day">31</button><button class="calendar-day muted-day">1</button>
+            </div>
+          </div>
+
+          <div class="card booking-card">
+            <div class="card-header"><div><h3>Book a new appointment</h3><p>Complete the visit details and reserve a clinic schedule</p></div></div>
+            <div class="form-group"><label>Patient</label><select class="select"><option>Alex Johnson</option><option>Bea Martinez</option><option>Carlos Rivera</option></select></div>
+            <div class="form-group"><label>Visit type</label><select class="select"><option>General Checkup</option><option>Follow-up Consultation</option><option>Vaccination</option><option>Laboratory Test</option></select></div>
+            <div class="form-group"><label>Assigned clinician</label><select class="select"><option>Dr. Maria Santos</option><option>Dr. Paulo Cruz</option><option>Dr. Elena Reyes</option></select></div>
+            <div class="form-grid">
+              <div class="form-group"><label>Date</label><input class="input" type="date" value="2026-07-14"></div>
+              <div class="form-group"><label>Time</label><input class="input" type="time" value="10:30"></div>
+            </div>
+            <div class="form-group"><label>Reason for visit</label><textarea class="textarea" placeholder="Briefly describe the concern or purpose of the visit"></textarea></div>
+            <button class="btn btn-primary btn-full" onclick="toast('Appointment booked successfully.')">Confirm appointment</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <div class="card-header">
+            <div><h3>Schedule for July 11</h3><p>Live clinic queue and appointment status</p></div>
+            <div class="pill-list"><span class="pill">All</span><span class="pill">Waiting</span><span class="pill">Completed</span></div>
+          </div>
+          <div class="appointment-list-redesign">
+            <div class="appointment-row">
+              <div class="appointment-timebox"><strong>9:00</strong><span>AM</span></div>
+              <div class="appointment-avatar">BM</div>
+              <div class="appointment-main"><strong>Bea Martinez</strong><span>General Consultation • Dr. Cruz</span></div>
+              <span class="status status-success">Checked in</span>
+              <button class="btn btn-ghost">Open</button>
+            </div>
+            <div class="appointment-row">
+              <div class="appointment-timebox"><strong>10:30</strong><span>AM</span></div>
+              <div class="appointment-avatar">AJ</div>
+              <div class="appointment-main"><strong>Alex Johnson</strong><span>Follow-up • Dr. Santos</span></div>
+              <span class="status status-info">Confirmed</span>
+              <button class="btn btn-ghost">Open</button>
+            </div>
+            <div class="appointment-row">
+              <div class="appointment-timebox"><strong>1:00</strong><span>PM</span></div>
+              <div class="appointment-avatar">CR</div>
+              <div class="appointment-main"><strong>Carlos Rivera</strong><span>Cardiology Review • Dr. Reyes</span></div>
+              <span class="status status-warning">Waiting</span>
+              <button class="btn btn-ghost">Open</button>
+            </div>
+            <div class="appointment-row">
+              <div class="appointment-timebox"><strong>3:15</strong><span>PM</span></div>
+              <div class="appointment-avatar">DL</div>
+              <div class="appointment-main"><strong>Diana Lim</strong><span>Vaccination • Nurse Ana</span></div>
+              <span class="status status-info">Confirmed</span>
+              <button class="btn btn-ghost">Open</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="billing" class="page">
+        <div class="page-header">
+          <div><h2>Billing & Payments</h2><p>Track invoices, insurance coverage, and clinic payments.</p></div>
+          <button class="btn btn-primary" onclick="toast('Invoice created.')">+ Create invoice</button>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Today’s collections</span><strong>₱42,580</strong><span class="trend-up">+12.4% vs yesterday</span></div>
+          <div class="stat-card"><span>Pending invoices</span><strong>18</strong><span>₱76,200 outstanding</span></div>
+          <div class="stat-card"><span>Insurance claims</span><strong>9</strong><span>3 pending review</span></div>
+          <div class="stat-card"><span>Refunds</span><strong>2</strong><span>₱1,850 total</span></div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Invoice</th><th>Patient</th><th>Service</th><th>Amount</th><th>Payment method</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>INV-2026-3118</td><td>Alex Johnson</td><td>Consultation + CBC</td><td>₱2,450</td><td>GCash</td><td><span class="status status-success">Paid</span></td></tr>
+                <tr><td>INV-2026-3117</td><td>Bea Martinez</td><td>General Consultation</td><td>₱950</td><td>Cash</td><td><span class="status status-success">Paid</span></td></tr>
+                <tr><td>INV-2026-3116</td><td>Carlos Rivera</td><td>Cardiology Review</td><td>₱3,800</td><td>Insurance</td><td><span class="status status-warning">Processing</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="users" class="page">
+        <div class="page-header">
+          <div><h2>User Management</h2><p>View, add, modify, and remove clinic user accounts.</p></div>
+          <button class="btn btn-primary" onclick="openUserModal('add')">+ Add user</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><span>Total users</span><strong id="totalUsers">5</strong><span>Across all roles</span></div>
+          <div class="stat-card"><span>Active accounts</span><strong>4</strong><span class="trend-up">80% enabled</span></div>
+          <div class="stat-card"><span>Administrators</span><strong>1</strong><span>Full system access</span></div>
+          <div class="stat-card"><span>Pending invite</span><strong>1</strong><span>Awaiting activation</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div><h3>Clinic users</h3><p>Manage identity, roles, and account access</p></div><span class="pill">Role-based access</span></div>
+          <div class="user-toolbar">
+            <label class="user-search"><span>⌕</span><input id="userSearch" class="input" placeholder="Search name or email" oninput="filterUsers()"></label>
+            <div class="user-filters"><select id="userRoleFilter" class="select" onchange="filterUsers()"><option value>All roles</option><option>Administrator</option><option>Doctor</option><option>Secretary</option><option>Patient</option></select><select id="userStatusFilter" class="select" onchange="filterUsers()"><option value>All status</option><option>Active</option><option>Inactive</option><option>Pending</option></select></div>
+          </div>
+          <div class="table-wrap">
+            <table id="userTable">
+              <thead><tr><th>User</th><th>Role</th><th>Contact</th><th>Last active</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td><div class="user-identity"><span class="avatar">MT</span><div><strong>Miguel Torres</strong><small>miguel.torres@acbclinic.ph</small></div></div></td><td>Administrator</td><td>+63 917 201 4401</td><td>Just now</td><td><span class="status status-success">Active</span></td><td><div class="user-actions"><button class="btn btn-ghost" onclick="manageUser('view',this)">View</button><button class="btn btn-ghost" onclick="manageUser('edit',this)">Edit</button><button class="btn btn-danger" onclick="removeUser(this)">Remove</button></div></td></tr>
+                <tr><td><div class="user-identity"><span class="avatar">MS</span><div><strong>Dr. Maria Santos</strong><small>maria.santos@acbclinic.ph</small></div></div></td><td>Doctor</td><td>+63 917 338 1920</td><td>8 min ago</td><td><span class="status status-success">Active</span></td><td><div class="user-actions"><button class="btn btn-ghost" onclick="manageUser('view',this)">View</button><button class="btn btn-ghost" onclick="manageUser('edit',this)">Edit</button><button class="btn btn-danger" onclick="removeUser(this)">Remove</button></div></td></tr>
+                <tr><td><div class="user-identity"><span class="avatar">SR</span><div><strong>Sofia Reyes</strong><small>sofia.reyes@acbclinic.ph</small></div></div></td><td>Secretary</td><td>+63 918 442 7731</td><td>23 min ago</td><td><span class="status status-success">Active</span></td><td><div class="user-actions"><button class="btn btn-ghost" onclick="manageUser('view',this)">View</button><button class="btn btn-ghost" onclick="manageUser('edit',this)">Edit</button><button class="btn btn-danger" onclick="removeUser(this)">Remove</button></div></td></tr>
+                <tr><td><div class="user-identity"><span class="avatar">AJ</span><div><strong>Alex Johnson</strong><small>alex.johnson@email.com</small></div></div></td><td>Patient</td><td>+63 917 555 0198</td><td>Yesterday</td><td><span class="status status-success">Active</span></td><td><div class="user-actions"><button class="btn btn-ghost" onclick="manageUser('view',this)">View</button><button class="btn btn-ghost" onclick="manageUser('edit',this)">Edit</button><button class="btn btn-danger" onclick="removeUser(this)">Remove</button></div></td></tr>
+                <tr><td><div class="user-identity"><span class="avatar">PC</span><div><strong>Dr. Paulo Cruz</strong><small>paulo.cruz@acbclinic.ph</small></div></div></td><td>Doctor</td><td>+63 919 801 2244</td><td>Never</td><td><span class="status status-warning">Pending</span></td><td><div class="user-actions"><button class="btn btn-ghost" onclick="manageUser('view',this)">View</button><button class="btn btn-ghost" onclick="manageUser('edit',this)">Edit</button><button class="btn btn-danger" onclick="removeUser(this)">Remove</button></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="analytics" class="page">
+        <div class="page-header">
+          <div><h2>Clinic Analytics</h2><p>Monitor clinic operations and patient care trends.</p></div>
+          <button class="btn btn-ghost" onclick="toast('Analytics report exported.')">Export report</button>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><span>Patients today</span><strong>46</strong><span class="trend-up">+8% this week</span></div>
+          <div class="stat-card"><span>Average wait time</span><strong>18 min</strong><span>Target: under 20 min</span></div>
+          <div class="stat-card"><span>Doctor utilization</span><strong>82%</strong><span class="trend-up">Healthy capacity</span></div>
+          <div class="stat-card"><span>Patient satisfaction</span><strong>4.8 / 5</strong><span>From 308 responses</span></div>
+        </div>
+        <div class="grid-equal">
+          <div class="card"><div class="card-header"><div><h3>Top consultation reasons</h3><p>This month</p></div></div><div class="pill-list"><span class="pill">General checkup • 34%</span><span class="pill">Respiratory • 21%</span><span class="pill">Vaccination • 18%</span><span class="pill">Cardiology • 12%</span><span class="pill">Pediatrics • 9%</span></div></div>
+          <div class="card"><div class="card-header"><div><h3>Operational insights</h3><p>Actionable clinic recommendations</p></div></div><div class="timeline"><div class="timeline-item"><div class="dot"></div><div><strong>Add afternoon secretary coverage</strong><p>Peak check-in congestion occurs between 1 PM and 3 PM.</p></div></div><div class="timeline-item"><div class="dot"></div><div><strong>Increase vaccine inventory</strong><p>Influenza bookings are up 23% this month.</p></div></div></div></div>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <div id="toast" class="toast">Saved successfully.</div>
+
+  <div id="userModal" class="user-modal" onclick="if(event.target===this) closeUserModal()">
+    <section class="user-modal-card" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
+      <div class="user-modal-head"><div><h3 id="userModalTitle">Add user</h3><small id="userModalSubtitle">Create a clinic account and assign access.</small></div><button class="modal-close" onclick="closeUserModal()" aria-label="Close">×</button></div>
+      <div class="form-grid">
+        <div class="form-group"><label>Full name</label><input id="manageUserName" class="input" placeholder="Enter full name"></div>
+        <div class="form-group"><label>Email address</label><input id="manageUserEmail" class="input" type="email" placeholder="name@example.com"></div>
+        <div class="form-group"><label>Contact number</label><input id="manageUserPhone" class="input" type="tel" placeholder="+63 9XX XXX XXXX"></div>
+        <div class="form-group"><label>Role</label><select id="manageUserRole" class="select"><option>Administrator</option><option>Doctor</option><option>Secretary</option><option>Patient</option></select></div>
+        <div class="form-group full"><label>Account status</label><select id="manageUserStatus" class="select"><option>Active</option><option>Inactive</option><option>Pending</option></select></div>
+      </div>
+      <div class="user-modal-actions"><button class="btn btn-ghost" onclick="closeUserModal()">Cancel</button><button id="saveUserButton" class="btn btn-primary" onclick="saveUser()">Save user</button></div>
+    </section>
+  </div>
+
+  <script>
+    const roleConfig = {
+      patient: {
+        label: "Patient", name: "Alex Johnson", initials: "AJ",
+        title: "Patient Dashboard",
+        subtitle: "Your appointments, prescriptions, and health updates at a glance.",
+        hero: "Your next checkup is scheduled for July 14 at 10:30 AM with Dr. Maria Santos.",
+        stats: ["2","3","18","7"]
+      },
+      doctor: {
+        label: "Doctor", name: "Dr. Maria Santos", initials: "MS",
+        title: "Doctor Dashboard",
+        subtitle: "Manage consultations, prescriptions, and patient care efficiently.",
+        hero: "You have 8 consultations today. Your next patient is Alex Johnson at 10:30 AM.",
+        stats: ["8","5","24","3"]
+      },
+      secretary: {
+        label: "Secretary", name: "Sofia Reyes", initials: "SR",
+        title: "Secretary Dashboard",
+        subtitle: "Coordinate appointments, patient documents, and clinic operations.",
+        hero: "12 patients are expected today. Three are currently waiting for check-in.",
+        stats: ["12","4","7","6"]
+      },
+      admin: {
+        label: "Administrator", name: "Miguel Torres", initials: "MT",
+        title: "Admin Dashboard",
+        subtitle: "Monitor clinic performance, users, billing, and system activity.",
+        hero: "Clinic utilization is at 82% today, with 46 scheduled patient visits.",
+        stats: ["46","18","32","9"]
+      }
+    };
+
+    let currentRole = "patient";
+    let editingUserRow = null;
+
+    function login() {
+      currentRole = document.getElementById("roleSelect").value;
+      const cfg = roleConfig[currentRole];
+
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+
+      document.getElementById("rolePill").textContent = cfg.label;
+      document.getElementById("sidebarRole").textContent = cfg.label;
+      document.getElementById("userName").textContent = cfg.name;
+      document.getElementById("avatar").textContent = cfg.initials;
+      document.getElementById("dashboardTitle").textContent = cfg.title;
+      document.getElementById("dashboardSubtitle").textContent = cfg.subtitle;
+      document.getElementById("heroGreeting").textContent = "Good morning, " + cfg.name.split(" ")[0] + " 👋";
+      document.getElementById("heroText").textContent = cfg.hero;
+      document.getElementById("stat1").textContent = cfg.stats[0];
+      document.getElementById("stat2").textContent = cfg.stats[1];
+      document.getElementById("stat3").textContent = cfg.stats[2];
+      document.getElementById("stat4").textContent = cfg.stats[3];
+      document.getElementById("secretaryAddPatientBtn").classList.toggle("hidden", currentRole !== "secretary");
+
+      document.querySelectorAll(".nav-item").forEach(item => {
+        const roleSpecific = [...item.classList].some(c => c.startsWith("role-") && c !== "role-all");
+        const allowed = item.classList.contains("role-" + currentRole) || item.classList.contains("role-all");
+        item.style.display = (!roleSpecific || allowed) ? "flex" : "none";
+      });
+
+      showPage("dashboard");
+    }
+
+    function logout() {
+      document.getElementById("app").classList.add("hidden");
+      document.getElementById("loginScreen").classList.remove("hidden");
+      document.getElementById("sidebar").classList.remove("open");
+    }
+
+    function showPage(pageId) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      const target = document.getElementById(pageId);
+      if (target) target.classList.add("active");
+
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.page === pageId));
+      document.getElementById("sidebar").classList.remove("open");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.querySelectorAll(".nav-item").forEach(item => {
+      item.addEventListener("click", () => showPage(item.dataset.page));
+    });
+
+    function addMedicine() {
+      const row = document.createElement("div");
+      row.className = "medicine-row";
+      row.innerHTML = `
+        <input class="input" placeholder="Medicine and strength" />
+        <input class="input" placeholder="Dosage" />
+        <input class="input" placeholder="Frequency" />
+        <input class="input" placeholder="Duration" />
+        <button class="btn btn-danger" onclick="this.parentElement.remove()">Remove</button>
+      `;
+      document.getElementById("medicineRows").appendChild(row);
+    }
+
+    function toast(message) {
+      const el = document.getElementById("toast");
+      el.textContent = message;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2500);
+    }
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
+    }
+
+    function calculateAge() {
+      const birthDateValue = document.getElementById("birthDateInput").value;
+      const ageInput = document.getElementById("ageInput");
+      if (!birthDateValue) {
+        ageInput.value = "";
+        return;
+      }
+
+      const birthDate = new Date(birthDateValue + "T00:00:00");
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+
+      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      ageInput.value = age >= 0 ? age + " years old" : "Invalid birthdate";
+    }
+
+    function openUserModal(mode, data = {}) {
+      editingUserRow = data.row || null;
+      const viewing = mode === "view";
+      document.getElementById("userModalTitle").textContent = viewing ? "User details" : mode === "edit" ? "Modify user" : "Add user";
+      document.getElementById("userModalSubtitle").textContent = viewing ? "Review this account and its assigned access." : "Manage clinic account information and permissions.";
+      const fields = ["manageUserName","manageUserEmail","manageUserPhone","manageUserRole","manageUserStatus"];
+      const values = [data.name || "", data.email || "", data.phone || "", data.role || "Patient", data.status || "Active"];
+      fields.forEach((id,index) => { const field=document.getElementById(id); field.value=values[index]; field.disabled=viewing; });
+      document.getElementById("saveUserButton").classList.toggle("hidden", viewing);
+      document.getElementById("userModal").classList.add("open");
+    }
+
+    function closeUserModal() { document.getElementById("userModal").classList.remove("open"); editingUserRow=null; }
+
+    function manageUser(mode, button) {
+      const row = button.closest("tr");
+      openUserModal(mode, { row, name:row.querySelector(".user-identity strong").textContent, email:row.querySelector(".user-identity small").textContent, role:row.cells[1].textContent, phone:row.cells[2].textContent, status:row.querySelector(".status").textContent });
+    }
+
+    function userInitials(name) { return name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase() || "U"; }
+    function statusClass(status) { return status === "Active" ? "status-success" : status === "Pending" ? "status-warning" : "status-danger"; }
+    function userRowHtml(name,email,phone,role,status) { return `<td><div class="user-identity"><span class="avatar">${userInitials(name)}</span><div><strong>${name}</strong><small>${email}</small></div></div></td><td>${role}</td><td>${phone}</td><td>Just now</td><td><span class="status ${statusClass(status)}">${status}</span></td><td><div class="user-actions"><button class="btn btn-ghost" onclick="manageUser('view',this)">View</button><button class="btn btn-ghost" onclick="manageUser('edit',this)">Edit</button><button class="btn btn-danger" onclick="removeUser(this)">Remove</button></div></td>`; }
+
+    function saveUser() {
+      const name=document.getElementById("manageUserName").value.trim(), email=document.getElementById("manageUserEmail").value.trim(), phone=document.getElementById("manageUserPhone").value.trim(), role=document.getElementById("manageUserRole").value, status=document.getElementById("manageUserStatus").value;
+      if (!name || !email) { toast("Name and email are required."); return; }
+      const wasEditing = Boolean(editingUserRow);
+      if (editingUserRow) editingUserRow.innerHTML=userRowHtml(name,email,phone,role,status); else { const row=document.createElement("tr"); row.innerHTML=userRowHtml(name,email,phone,role,status); document.querySelector("#userTable tbody").appendChild(row); }
+      updateUserCount(); closeUserModal(); toast(wasEditing ? "User updated successfully." : "User added successfully.");
+    }
+
+    function removeUser(button) { const row=button.closest("tr"), name=row.querySelector(".user-identity strong").textContent; if(confirm(`Remove ${name} from clinic users?`)){ row.remove(); updateUserCount(); toast("User removed successfully."); } }
+    function updateUserCount() { document.getElementById("totalUsers").textContent=document.querySelectorAll("#userTable tbody tr").length; }
+    function filterUsers() { const query=document.getElementById("userSearch").value.toLowerCase(), role=document.getElementById("userRoleFilter").value, status=document.getElementById("userStatusFilter").value; document.querySelectorAll("#userTable tbody tr").forEach(row=>{ const matchesText=row.textContent.toLowerCase().includes(query), matchesRole=!role||row.cells[1].textContent===role, matchesStatus=!status||row.querySelector(".status").textContent===status; row.style.display=matchesText&&matchesRole&&matchesStatus?"":"none"; }); }
+
+    calculateAge();
+  </script>
+<script src="polyfills-5CFQRCPP.js" type="module"></script><script src="main-L6P5G76P.js" type="module"></script></body>
+</html>
