@@ -81,6 +81,13 @@ model Patient {
   emergencyPreferredHospital   String?
   bloodType                    String?
   philHealthInsuranceId        String?
+  bloodPressure                String?
+  heartRate                    Int?
+  respiratoryRate              Int?
+  bodyTemperatureC             Float?
+  oxygenSaturation             Int?
+  weightKg                     Float?
+  heightCm                     Float?
 
   // Keep free-form clinical notes minimal here; consider a separate
   // encrypted/medical-records table as the app grows.

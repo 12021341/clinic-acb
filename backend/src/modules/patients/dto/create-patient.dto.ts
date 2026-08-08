@@ -2,6 +2,7 @@ import {
   IsDateString,
   IsEmail,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -107,6 +108,46 @@ export class CreatePatientDto {
   @IsOptional()
   @IsString()
   philHealthInsuranceId?: string;
+
+  @IsOptional()
+  @IsString()
+  bloodPressure?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(300)
+  heartRate?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  respiratoryRate?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(30)
+  @Max(45)
+  bodyTemperatureC?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  oxygenSaturation?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(500)
+  weightKg?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(300)
+  heightCm?: number;
 
   @IsOptional()
   @IsString()
