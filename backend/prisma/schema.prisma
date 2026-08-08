@@ -1,0 +1,180 @@
+// Prisma schema for the Clinic Management backend.
+// Run `npm run prisma:migrate` after adjusting this file.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  NURSE
+  FRONT_DESK
+  PATIENT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+// Staff + patient portal accounts. Login identity lives here.
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role     @default(PATIENT)
+  isActive     Boolean  @default(true)
+  refreshToken String? // hashed refresh token, for rotation/logout support
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // A staff user (DOCTOR role) may have appointments assigned to them
+  appointmentsAsDoctor Appointment[] @relation("DoctorAppointments")
+
+  // If this account belongs to a patient, link to their clinical record
+  patientProfile Patient?
+
+  auditLogs AuditLog[]
+  prescriptionsAsDoctor Prescription[] @relation("DoctorPrescriptions")
+
+  @@map("users")
+}
+
+// Clinical record - separate from User so a patient's medical data
+// can exist even before/without a login account (e.g. walk-ins).
+model Patient {
+  id        String  @id @default(uuid())
+  patientId String  @unique
+  userId    String? @unique
+  user      User?   @relation(fields: [userId], references: [id])
+
+  firstName                    String
+  lastName                     String
+  dateOfBirth                  DateTime
+  age                          Int?
+  sex                          String?
+  mobileNumber                 String?
+  emailAddress                 String?
+  homeAddress                  String?
+  fatherName                   String?
+  fatherAge                    Int?
+  fatherOccupation             String?
+  fatherContactNumber          String?
+  motherName                   String?
+  motherAge                    Int?
+  motherOccupation             String?
+  motherContactNumber          String?
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  emergencyContactNumber       String?
+  emergencyPreferredHospital   String?
+  bloodType                    String?
+  philHealthInsuranceId        String?
+
+  // Keep free-form clinical notes minimal here; consider a separate
+  // encrypted/medical-records table as the app grows.
+  allergies  String?
+  conditions String?
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments   Appointment[]
+  vaccineRecords VaccineRecord[]
+  prescriptions Prescription[]
+
+  @@map("patients")
+}
+
+model Prescription {
+  id           String   @id @default(uuid())
+  patientId    String
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  doctorId     String
+  doctor       User     @relation("DoctorPrescriptions", fields: [doctorId], references: [id])
+  medication   String
+  dosage       String
+  instructions String
+  quantity     Int
+  refills      Int      @default(0)
+  status       String   @default("DRAFT")
+  notes        String?
+  issuedAt     DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([patientId, issuedAt])
+  @@index([doctorId, issuedAt])
+  @@map("prescriptions")
+}
+
+model Appointment {
+  id        String  @id @default(uuid())
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  doctorId String
+  doctor   User   @relation("DoctorAppointments", fields: [doctorId], references: [id])
+
+  scheduledAt DateTime
+  date        DateTime          @db.Date
+  time        String
+  visitType   String
+  purpose     String
+  durationMin Int               @default(30)
+  status      AppointmentStatus @default(PENDING)
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([doctorId, scheduledAt])
+  @@index([patientId, scheduledAt])
+  @@map("appointments")
+}
+
+model VaccineRecord {
+  id               String   @id @default(uuid())
+  patientId        String
+  patient          Patient  @relation(fields: [patientId], references: [id])
+  vaccineName      String
+  dose             String
+  dateAdministered DateTime @db.Date
+  manufacturer     String?
+  lotNumber        String?
+  administeredBy   String
+  status           String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([patientId, dateAdministered])
+  @@index([vaccineName])
+  @@map("vaccine_records")
+}
+
+// Basic audit trail — who touched what, and when.
+// Worth expanding as compliance requirements become clearer.
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String // e.g. "PATIENT_RECORD_VIEWED", "APPOINTMENT_CANCELLED"
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+}

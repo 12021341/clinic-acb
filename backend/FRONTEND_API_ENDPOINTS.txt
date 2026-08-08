@@ -1,0 +1,526 @@
+CAREFLOW FRONTEND API INTEGRATION GUIDE
+=======================================
+
+BASE URL
+--------
+http://localhost:3000/api/v1
+
+Protected endpoints require these headers:
+
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+
+
+ROLE MAPPING
+------------
+Frontend label       API role
+Administrator        ADMIN
+Secretary            FRONT_DESK
+Doctor               DOCTOR
+Patient              PATIENT
+Nurse                NURSE
+
+
+1. AUTHENTICATION
+=================
+
+POST /auth/register
+Frontend location: Future patient registration page.
+Description: Creates a patient-role account. Public registration cannot create
+staff or administrator accounts.
+
+Example body:
+{
+  "email": "patient@example.com",
+  "password": "minimum-8-characters",
+  "firstName": "Maria",
+  "lastName": "Santos"
+}
+
+
+POST /auth/register/patient
+Frontend location: Patient registration page.
+Description: Atomically creates a PATIENT login account and its linked clinical
+patient profile, generates the display patient ID, and returns access and
+refresh tokens. This is the recommended registration endpoint for the patient
+portal.
+
+Required fields:
+- email
+- password (minimum 8 characters)
+- firstName
+- lastName
+- dateOfBirth
+
+Example body:
+{
+  "email": "maria@example.com",
+  "password": "Password1!",
+  "firstName": "Maria",
+  "lastName": "Santos",
+  "dateOfBirth": "1990-01-02",
+  "sex": "Female",
+  "mobileNumber": "+63 917 000 0000",
+  "homeAddress": "Manila",
+  "emergencyContactName": "Juan Santos",
+  "emergencyContactRelationship": "Spouse",
+  "emergencyContactNumber": "+63 917 111 1111",
+  "bloodType": "O+",
+  "philHealthInsuranceId": "12-345678901-2",
+  "allergies": "Penicillin",
+  "conditions": "Hypertension"
+}
+
+
+POST /auth/login
+Frontend location: Login page.
+Description: Authenticates a user and returns access and refresh tokens. Keep
+the access token in memory and attach it to protected requests.
+
+Example body:
+{
+  "email": "doctor@careflow.ph",
+  "password": "password"
+}
+
+
+POST /auth/refresh
+Frontend location: Authentication service or HTTP interceptor.
+Description: Requests new tokens when the access token expires.
+
+Example body:
+{
+  "userId": "user-uuid",
+  "refreshToken": "refresh-token"
+}
+
+
+POST /auth/logout
+Frontend location: User menu or Logout button.
+Description: Invalidates the user's stored refresh token.
+Authentication: Required.
+
+
+2. CURRENT USER
+===============
+
+GET /users/me
+Frontend location: Sidebar, header, profile, and role-aware navigation.
+Description: Returns the currently authenticated user. Use the returned role
+instead of the frontend's temporary View As role selector.
+Authentication: Required.
+
+
+3. DASHBOARD
+============
+
+GET /dashboard
+Frontend location: Dashboard page.
+Description: Returns today's statistics, appointment schedule, and recently
+updated patients in one response.
+Allowed roles: ADMIN, DOCTOR, NURSE, FRONT_DESK.
+
+Use this response for:
+- Today's appointments
+- Patients checked in
+- Prescriptions issued
+- Today's schedule
+- Recent patients
+
+Example response shape:
+{
+  "date": "2026-08-06",
+  "stats": {
+    "appointments": 12,
+    "checkedIn": 8,
+    "prescriptions": 6
+  },
+  "schedule": [],
+  "recentPatients": []
+}
+
+Note: Average wait time is not currently backed by stored check-in or wait-time
+data.
+
+
+4. APPOINTMENTS
+===============
+
+GET /appointments
+Frontend location: Appointments page and calendar.
+Description: Returns all appointments ordered by scheduled time.
+Allowed roles: ADMIN, DOCTOR, NURSE, FRONT_DESK.
+
+
+GET /appointments?doctorId={user-uuid}
+Frontend location: Doctor schedule filter.
+Description: Returns appointments assigned to one doctor.
+
+
+GET /appointments?patientId={patient-uuid}
+Frontend location: Patient record appointment-history section.
+Description: Returns appointments belonging to one patient.
+
+
+GET /appointments/:id
+Frontend location: Appointment details page or modal.
+Description: Returns one appointment by its UUID.
+
+
+POST /appointments
+Frontend location: New Appointment form.
+Description: Books an appointment. The API rejects overlapping appointments
+assigned to the same doctor.
+Allowed roles: ADMIN, FRONT_DESK.
+
+Example body:
+{
+  "patientId": "patient-uuid",
+  "assignedDoctorId": "doctor-user-uuid",
+  "date": "2026-08-10",
+  "time": "09:30",
+  "visitType": "Returning",
+  "purpose": "Follow-up consultation",
+  "durationMin": 30
+}
+
+The time field must use 24-hour HH:mm format.
+
+
+PATCH /appointments/:id
+Frontend location: Edit Appointment or appointment-action menu.
+Description: Reschedules an appointment, changes its assigned doctor, updates
+notes, or changes its status.
+Allowed roles: ADMIN, DOCTOR, NURSE, FRONT_DESK.
+
+Valid status values:
+- PENDING
+- CONFIRMED
+- CANCELLED
+- COMPLETED
+- NO_SHOW
+
+
+DELETE /appointments/:id
+Frontend location: Cancel Appointment action.
+Description: Changes the appointment status to CANCELLED. It does not erase
+the database record.
+Allowed roles: ADMIN, FRONT_DESK.
+
+
+5. PATIENTS
+============
+
+GET /patients
+Frontend location: Patients workspace and patient search/list.
+Description: Returns all patient records ordered by last name.
+Allowed roles: ADMIN, DOCTOR, NURSE, FRONT_DESK.
+
+
+GET /patients/:id
+Frontend location: Patient overview, demographics, medical history, allergies,
+and conditions.
+Description: Returns one patient using the database UUID.
+Allowed roles: ADMIN, DOCTOR, NURSE, FRONT_DESK.
+
+Important: The :id parameter is the database UUID, not the display ID such as
+PT-1057.
+
+
+POST /patients
+Frontend location: New Patient form.
+Description: Creates a clinical patient record.
+Allowed roles: ADMIN, FRONT_DESK.
+
+Minimal example body:
+{
+  "patientId": "PT-1057",
+  "firstName": "James",
+  "lastName": "Wilson",
+  "dateOfBirth": "1995-04-12"
+}
+
+Optional fields:
+- userId (PATIENT-role user UUID used to enable the patient portal)
+- age
+- sex
+- mobileNumber
+- emailAddress
+- homeAddress
+- fatherName
+- fatherAge
+- fatherOccupation
+- fatherContactNumber
+- motherName
+- motherAge
+- motherOccupation
+- motherContactNumber
+- emergencyContactName
+- emergencyContactRelationship
+- emergencyContactNumber
+- emergencyPreferredHospital
+- bloodType
+- philHealthInsuranceId
+- allergies
+- conditions
+
+
+PATCH /patients/:id
+Frontend location: Edit Patient form.
+Description: Updates demographics, family information, emergency contacts,
+conditions, allergies, or notes.
+Allowed roles: ADMIN, DOCTOR, NURSE, FRONT_DESK.
+
+
+DELETE /patients/:id
+Frontend location: Administrator-only patient removal action.
+Description: Permanently deletes a patient record. Use cautiously because this
+is not a soft-delete operation.
+Allowed role: ADMIN.
+
+
+6. PRESCRIPTIONS
+================
+
+GET /prescriptions
+Frontend location: Prescriptions workspace and prescription history.
+Description: Returns prescriptions ordered by issue date.
+Allowed roles: ADMIN, DOCTOR, NURSE.
+
+
+GET /prescriptions?patientId={patient-uuid}
+Frontend location: Prescriptions section inside a patient record.
+Description: Returns prescriptions belonging to one patient.
+
+
+GET /prescriptions?doctorId={doctor-user-uuid}
+Frontend location: Doctor prescription-history filter.
+Description: Returns prescriptions issued by one doctor.
+
+
+GET /prescriptions/:id
+Frontend location: Prescription details, preview, or print modal.
+Description: Returns one prescription. The response includes patient allergy
+information for frontend safety warnings.
+
+
+POST /prescriptions
+Frontend location: New Prescription and Start Consultation workflows.
+Description: Creates a prescription. The doctor ID is taken from the
+authenticated user.
+Allowed roles: ADMIN, DOCTOR, NURSE.
+
+Example body:
+{
+  "patientId": "patient-uuid",
+  "medication": "Amoxicillin",
+  "dosage": "500 mg capsule",
+  "instructions": "Take one capsule every 8 hours for 7 days.",
+  "quantity": 21,
+  "refills": 0,
+  "notes": "Optional clinical note"
+}
+
+
+POST /prescriptions/batch
+Frontend location: New Prescription modal with multiple medications.
+Description: Atomically creates one prescription record per medication for the
+same patient. If any medication fails validation or creation, none are saved.
+The doctor ID is taken from the authenticated user.
+Allowed roles: ADMIN, DOCTOR, NURSE.
+
+Example body:
+{
+  "patientId": "patient-uuid",
+  "medications": [
+    {
+      "medication": "Amoxicillin",
+      "dosage": "500 mg capsule",
+      "instructions": "Take one capsule every 8 hours for 7 days.",
+      "quantity": 21,
+      "refills": 0,
+      "notes": "Optional clinical note"
+    },
+    {
+      "medication": "Paracetamol",
+      "dosage": "500 mg tablet",
+      "instructions": "Take one tablet as needed for pain.",
+      "quantity": 10,
+      "refills": 0
+    }
+  ]
+}
+
+
+POST /prescriptions/batch
+Frontend location: New Prescription modal when one or more medications are
+included.
+Description: Saves every medication in a single database transaction. If any
+medication fails validation or persistence, none of the medications are saved.
+Use this endpoint instead of sending multiple parallel POST /prescriptions
+requests from the modal.
+Allowed roles: ADMIN, DOCTOR, NURSE.
+
+Example body:
+{
+  "patientId": "patient-uuid",
+  "medications": [
+    {
+      "medication": "Amoxicillin",
+      "dosage": "500 mg capsule",
+      "instructions": "Take one capsule every 8 hours for 7 days.",
+      "quantity": 21,
+      "refills": 0,
+      "notes": "Optional internal clinical note"
+    },
+    {
+      "medication": "Paracetamol",
+      "dosage": "500 mg tablet",
+      "instructions": "Take one tablet as needed for fever.",
+      "quantity": 10,
+      "refills": 0
+    }
+  ]
+}
+
+Response: An array of the created prescription medication records.
+
+
+PATCH /prescriptions/:id
+Frontend location: Edit Prescription form or issue/review action.
+Description: Updates a prescription draft or changes its status before it is
+printed or issued.
+Allowed roles: ADMIN, DOCTOR, NURSE.
+
+
+7. ADMINISTRATOR USER MANAGEMENT
+================================
+
+GET /users
+Frontend location: User Management page and user-summary counters.
+Description: Replaces the hardcoded users array. Returns users without password
+hashes or refresh tokens.
+Allowed role: ADMIN.
+
+
+POST /users
+Frontend location: Add User modal.
+Description: Creates a staff, administrator, or patient account using an
+administrator-provided temporary password.
+Allowed role: ADMIN.
+
+Example body:
+{
+  "email": "doctor@careflow.ph",
+  "password": "TemporaryPassword1!",
+  "firstName": "Rafael",
+  "lastName": "Cruz",
+  "role": "DOCTOR"
+}
+
+
+PATCH /users/:id
+Frontend location: Edit User modal.
+Description: Updates the user's name, email address, role, or active status.
+Allowed role: ADMIN.
+
+Example body:
+{
+  "email": "rafael.cruz@careflow.ph",
+  "firstName": "Rafael",
+  "lastName": "Cruz",
+  "role": "DOCTOR",
+  "isActive": true
+}
+
+Frontend account-status mapping:
+Active    = isActive: true
+Inactive  = isActive: false
+
+The current frontend uses one name field. It should either collect firstName
+and lastName separately or split the value before submitting it.
+
+
+DELETE /users/:id
+Frontend location: Remove User action.
+Description: Safely deactivates the account instead of deleting its historical
+records.
+Allowed role: ADMIN.
+
+
+8. VACCINATIONS
+===============
+
+The backend supports vaccination records, but the frontend does not currently
+have a dedicated vaccination page.
+
+
+GET /vaccines
+Suggested frontend location: Vaccination Records workspace.
+Description: Returns all vaccination records.
+Allowed roles: ADMIN, DOCTOR, NURSE, FRONT_DESK.
+
+
+GET /vaccines?patientId={patient-uuid}
+Suggested frontend location: Vaccination tab inside a patient record.
+Description: Returns vaccination records belonging to one patient.
+
+
+GET /vaccines/:id
+Suggested frontend location: Vaccination details page or modal.
+Description: Returns one vaccination record.
+
+
+POST /vaccines
+Suggested frontend location: Add Vaccination form.
+Description: Adds a vaccination record to a patient.
+Allowed roles: ADMIN, DOCTOR, NURSE.
+
+Example body:
+{
+  "patientId": "patient-uuid",
+  "vaccineName": "Influenza",
+  "dose": "0.5 mL",
+  "dateAdministered": "2026-08-06",
+  "manufacturer": "Example Manufacturer",
+  "lotNumber": "LOT-123",
+  "administeredBy": "Dr. Rafael Cruz",
+  "status": "COMPLETED"
+}
+
+
+PATIENT PORTAL
+==============
+
+These routes derive the patient record from the authenticated account. The
+frontend must not send a patient UUID for these requests.
+
+GET /patients/me
+Frontend location: Patient profile and dashboard overview.
+Description: Returns the clinical profile linked to the signed-in patient.
+Allowed role: PATIENT.
+
+GET /patients/me/appointments
+Frontend location: Patient Appointments page.
+Description: Returns only the signed-in patient's appointments, including the
+assigned doctor's display information.
+Allowed role: PATIENT.
+
+GET /patients/me/prescriptions
+Frontend location: Patient Prescriptions page.
+Description: Returns only the signed-in patient's prescriptions, including the
+prescribing doctor's display information.
+Allowed role: PATIENT.
+
+If the account has no linked Patient.userId record, these endpoints return 404.
+Create or update the patient record with `userId` set to the UUID returned by
+the administrator user-management API. The field is unique, so one login
+account can be linked to only one clinical patient record.
+
+
+SWAGGER DOCUMENTATION
+=====================
+
+Interactive backend API documentation is available while the server is running:
+
+http://localhost:3000/api/docs

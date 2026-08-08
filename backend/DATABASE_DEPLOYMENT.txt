@@ -1,0 +1,99 @@
+CAREFLOW DATABASE DEPLOYMENT
+============================
+
+RECOMMENDED PRODUCTION SETUP
+----------------------------
+Use a managed PostgreSQL database in the cloud and keep all schema changes in
+the version-controlled prisma/migrations directory. A managed service usually
+provides backups, monitoring, encryption, upgrades, and high availability.
+
+Do not store the production DATABASE_URL in this repository. Configure it as a
+secret/environment variable in the server or deployment platform.
+
+
+HOW TABLES ARE CREATED
+----------------------
+The SQL queries are already stored in these ordered Prisma migration files:
+
+prisma/migrations/20260725161006_init/migration.sql
+prisma/migrations/20260726100000_expand_patient_profile/migration.sql
+prisma/migrations/20260726104000_expand_appointment_booking/migration.sql
+prisma/migrations/20260726111000_create_vaccine_records/migration.sql
+prisma/migrations/20260806120000_create_prescriptions/migration.sql
+
+Together they create and update these application tables:
+
+- users
+- patients
+- appointments
+- vaccine_records
+- prescriptions
+- audit_logs
+
+Prisma also creates its internal _prisma_migrations table to record which SQL
+migrations have already run. Because of this tracking, each migration is
+applied only once.
+
+Do not combine and manually rerun the SQL files on an existing database. Use
+Prisma Migrate so deployment history stays correct.
+
+
+SERVER DEPLOYMENT
+-----------------
+1. Install production and migration dependencies:
+
+   npm ci
+
+2. Set the cloud PostgreSQL connection string:
+
+   export DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?schema=public&sslmode=require"
+
+3. Apply every pending migration:
+
+   python3 run_migration.py
+
+Equivalent command without Python:
+
+   npm run prisma:migrate:deploy
+
+4. Start the compiled API:
+
+   npm run build
+   npm run start:prod
+
+
+SAMPLE DATA
+-----------
+Tables do not need sample data in production. Real records should normally be
+created through the API.
+
+For a development or staging database only, apply migrations and load the
+fictional patient records:
+
+   python3 run_migration.py --seed
+
+Production seeding is deliberately blocked. If fictional demo records are
+intentionally required in production, the operator must explicitly run:
+
+   python3 run_migration.py --seed --allow-production-seed
+
+
+DEPLOYMENT PIPELINE EXAMPLE
+---------------------------
+Run this as a release step before starting the new application version:
+
+   python3 run_migration.py && npm run start:prod
+
+For multiple API instances, run migrations once as a dedicated release job
+rather than independently in every web-server process.
+
+
+IMPORTANT SECURITY SETTINGS
+---------------------------
+- Require TLS/SSL for the database connection.
+- Store DATABASE_URL and JWT secrets in the deployment platform's secret store.
+- Restrict database network access to the API server.
+- Use a dedicated database user with only the permissions the app requires.
+- Enable automatic backups and test restoring them.
+- Use a separate database for development, staging, and production.
+- Never load real patient data into development or staging.
