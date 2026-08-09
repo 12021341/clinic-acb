@@ -10,6 +10,7 @@ import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { VaccinesModule } from './modules/vaccines/vaccines.module';
 import { PrescriptionsModule } from './modules/prescriptions/prescriptions.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { MedicalCertificatesModule } from './modules/medical-certificates/medical-certificates.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     VaccinesModule,
     PrescriptionsModule,
     DashboardModule,
+    MedicalCertificatesModule,
   ],
   providers: [
     // Basic rate limiting on every route by default

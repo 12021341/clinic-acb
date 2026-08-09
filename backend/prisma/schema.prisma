@@ -45,8 +45,9 @@ model User {
   // If this account belongs to a patient, link to their clinical record
   patientProfile Patient?
 
-  auditLogs AuditLog[]
-  prescriptionsAsDoctor Prescription[] @relation("DoctorPrescriptions")
+  auditLogs                   AuditLog[]
+  prescriptionsAsDoctor       Prescription[]       @relation("DoctorPrescriptions")
+  medicalCertificatesAsDoctor MedicalCertificate[] @relation("DoctorMedicalCertificates")
 
   @@map("users")
 }
@@ -98,11 +99,29 @@ model Patient {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  appointments   Appointment[]
-  vaccineRecords VaccineRecord[]
-  prescriptions Prescription[]
+  appointments        Appointment[]
+  vaccineRecords      VaccineRecord[]
+  prescriptions       Prescription[]
+  medicalCertificates MedicalCertificate[]
 
   @@map("patients")
+}
+
+model MedicalCertificate {
+  id              String   @id @default(uuid())
+  patientId       String?
+  patient         Patient? @relation(fields: [patientId], references: [id])
+  patientName     String
+  doctorId        String
+  doctor          User     @relation("DoctorMedicalCertificates", fields: [doctorId], references: [id])
+  certificateDate DateTime @db.Date
+  details         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([patientId, certificateDate])
+  @@index([doctorId, certificateDate])
+  @@map("medical_certificates")
 }
 
 model Prescription {

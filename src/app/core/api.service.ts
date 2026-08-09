@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Appointment, Dashboard, Patient, PatientAppointment, PatientPrescription, Prescription, User, Vaccine } from './models';
+import { Appointment, Dashboard, MedicalCertificate, Patient, PatientAppointment, PatientPrescription, Prescription, User, Vaccine } from './models';
 
 const API = 'http://localhost:3000/api/v1';
 @Injectable({ providedIn: 'root' })
@@ -33,5 +33,9 @@ export class ApiService {
   vaccines(patientId?: string) { return this.http.get<Vaccine[]>(`${API}/vaccines`, { params: patientId ? { patientId } : {} }); }
   vaccine(id: string) { return this.http.get<Vaccine>(`${API}/vaccines/${id}`); }
   createVaccine(body: object) { return this.http.post<Vaccine>(`${API}/vaccines`, body); }
+  medicalCertificates(filters: { patientId?: string; doctorId?: string } = {}) { return this.http.get<MedicalCertificate[]>(`${API}/medical-certificates`, { params: this.params(filters) }); }
+  medicalCertificate(id: string) { return this.http.get<MedicalCertificate>(`${API}/medical-certificates/${id}`); }
+  createMedicalCertificate(body: object) { return this.http.post<MedicalCertificate>(`${API}/medical-certificates`, body); }
+  updateMedicalCertificate(id: string, body: object) { return this.http.patch<MedicalCertificate>(`${API}/medical-certificates/${id}`, body); }
   private params(filters: Record<string, string | undefined>): HttpParams { let params = new HttpParams(); Object.entries(filters).forEach(([key, value]) => { if (value) params = params.set(key, value); }); return params; }
 }

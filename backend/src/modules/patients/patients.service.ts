@@ -31,10 +31,23 @@ export class PatientsService {
     }
   }
 
-  findAll() {
-    return this.prisma.patient.findMany({
+  async findAll() {
+    const patients = await this.prisma.patient.findMany({
       orderBy: { lastName: 'asc' },
+      include: {
+        appointments: {
+          where: { status: 'COMPLETED' },
+          orderBy: { scheduledAt: 'desc' },
+          take: 1,
+          select: { scheduledAt: true },
+        },
+      },
     });
+
+    return patients.map(({ appointments, ...patient }) => ({
+      ...patient,
+      lastCheckupDate: appointments[0]?.scheduledAt ?? null,
+    }));
   }
 
   async findOne(id: string) {

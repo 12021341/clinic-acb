@@ -33,6 +33,10 @@ export class ApiService {
     vaccines(patientId) { return this.http.get(`${API}/vaccines`, { params: patientId ? { patientId } : {} }); }
     vaccine(id) { return this.http.get(`${API}/vaccines/${id}`); }
     createVaccine(body) { return this.http.post(`${API}/vaccines`, body); }
+    medicalCertificates(filters = {}) { return this.http.get(`${API}/medical-certificates`, { params: this.params(filters) }); }
+    medicalCertificate(id) { return this.http.get(`${API}/medical-certificates/${id}`); }
+    createMedicalCertificate(body) { return this.http.post(`${API}/medical-certificates`, body); }
+    updateMedicalCertificate(id, body) { return this.http.patch(`${API}/medical-certificates/${id}`, body); }
     params(filters) { let params = new HttpParams(); Object.entries(filters).forEach(([key, value]) => { if (value)
         params = params.set(key, value); }); return params; }
     static { this.ɵfac = function ApiService_Factory(__ngFactoryType__) { return new (__ngFactoryType__ || ApiService)(); }; }

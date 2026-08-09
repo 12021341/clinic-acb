@@ -1,1 +1,72 @@
-/* The clinic_v1 template owns its complete visual system in src/index.html. */
+@use "tailwindcss";
+@use '@angular/material' as mat;
+
+@font-face {
+  font-family: 'Petrov Sans';
+  src: local('Petrov Sans Variable'),
+       local('Petrov Sans'),
+       url('/fonts/PetrovSans-Variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: 'Petrov Sans', Arial, sans-serif;
+}
+
+/* Shared Angular Material 3 theme. Existing clinic styles remain authoritative
+   while Material components inherit the Pedia Care palette and typography. */
+html {
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: mat.$cyan-palette,
+      tertiary: mat.$spring-green-palette,
+    ),
+    typography: (
+      plain-family: ('Petrov Sans', Arial, sans-serif),
+      brand-family: ('Petrov Sans', Arial, sans-serif),
+      regular-weight: 400,
+      medium-weight: 600,
+      bold-weight: 800,
+    ),
+    density: (
+      scale: 0,
+    ),
+  ));
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Petrov Sans', Arial, sans-serif;
+}
+
+/* The legacy prototype in index.html gives every table a 760px minimum width.
+   Material's calendar is also a table, so explicitly isolate it from those
+   broad table-cell rules. Material itself supplies the intended 296x354px
+   popup dimensions. */
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table {
+  min-width: 0 !important;
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table th,
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table td {
+  border-bottom: 0;
+  background: transparent;
+  font-size: inherit;
+}
+
+.cdk-overlay-container .mat-datepicker-content .mat-calendar-table td {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media (max-width: 320px) {
+  .cdk-overlay-container .mat-datepicker-content .mat-calendar {
+    width: calc(100vw - 24px);
+  }
+}

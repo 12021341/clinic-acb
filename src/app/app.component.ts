@@ -1,13 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MaterialDatePickerComponent } from './shared/material-date-picker.component';
 import { forkJoin, map, Observable, switchMap } from 'rxjs';
 import { ApiService } from './core/api.service';
 import { AuthService } from './core/auth.service';
 import { ApiRole, Appointment, Dashboard, Patient, PatientAppointment, PatientPrescription, Prescription, User, Vaccine } from './core/models';
 
-type View = 'Dashboard'|'Appointments'|'Patients'|'Prescriptions'|'Vaccinations'|'Users'|'Consultation';
-type Modal = 'appointment'|'patient'|'prescription'|'vaccine'|'user'|'consultation'|'detail'|null;
+type View = 'Dashboard'|'Appointments'|'Patients'|'Prescriptions'|'Vaccinations'|'Users'|'Consultation'|'Medical Certificate';
+type Modal = 'appointment'|'patient'|'prescription'|'vaccine'|'user'|'consultation'|'end-consultation'|'detail'|null;
 type ConsultationNote = {
   assessmentDiagnosis: string;
   treatmentPlan: string;
@@ -15,7 +18,7 @@ type ConsultationNote = {
   referralsFollowUp: string;
 };
 
-@Component({ selector: 'app-root', standalone: true, imports: [CommonModule, FormsModule], templateUrl: './app.component.html', styleUrl: './app.component.scss' })
+@Component({ selector: 'app-root', standalone: true, imports: [CommonModule, FormsModule, MatButtonModule, MatTooltipModule, MaterialDatePickerComponent], templateUrl: './app.component.html', styleUrl: './app.component.scss' })
 export class AppComponent implements OnInit {
   protected readonly auth = inject(AuthService);
   private readonly api = inject(ApiService);
@@ -52,7 +55,37 @@ export class AppComponent implements OnInit {
   protected prescriptionPatientSearch = '';
   protected additionalMedications: any[] = [];
   protected vaccineForm: any = {};
+  protected vaccinePatientSearch = '';
+  protected readonly vaccineSuggestions = [
+    'Bacillus Calmette–Guérin Vaccine (BCG)',
+    'Hepatitis B Vaccine (HepB)',
+    'Diphtheria Vaccine',
+    'Tetanus Vaccine',
+    'Pertussis (Whooping Cough) Vaccine',
+    'Haemophilus influenzae type b Vaccine (Hib)',
+    'Oral Polio Vaccine (OPV)',
+    'Inactivated Polio Vaccine (IPV)',
+    'Pneumococcal Conjugate Vaccine (PCV)',
+    'Rotavirus Vaccine',
+    'Measles Vaccine',
+    'Mumps Vaccine',
+    'Rubella Vaccine',
+    'Japanese Encephalitis Vaccine (JE)',
+    'Influenza (Flu) Vaccine',
+    'Varicella (Chickenpox) Vaccine',
+    'Hepatitis A Vaccine (HepA)',
+    'Typhoid Vaccine',
+    'Meningococcal Vaccine (ACWY and B strains)',
+    'Human Papillomavirus Vaccine (HPV)',
+  ];
   protected userForm: any = {};
+  protected medicalCertificateForm = {
+    patientId: '',
+    date: new Date().toISOString().slice(0, 10),
+    details: '',
+  };
+  protected certificatePatientSearch = '';
+  protected readonly certificateSuggestionsOpen = signal(false);
   protected clinicalOverviewForm = { allergies: '', conditions: '' };
   protected consultationNoteForm: ConsultationNote = { assessmentDiagnosis: '', treatmentPlan: '', diagnosticOrders: '', referralsFollowUp: '' };
 
@@ -61,6 +94,10 @@ export class AppComponent implements OnInit {
   protected readonly visiblePrescriptions = computed(() => this.filter(this.prescriptions(), p => `${p.patient.firstName} ${p.patient.lastName} ${p.medication} ${p.status}`));
   protected readonly visibleVaccines = computed(() => this.filter(this.vaccines(), v => `${v.patient.firstName} ${v.patient.lastName} ${v.vaccineName} ${v.status}`));
   protected readonly visibleUsers = computed(() => this.filter(this.users(), u => `${u.firstName} ${u.lastName} ${u.email} ${u.role}`));
+  protected readonly certificatePatientSuggestions = computed(() => {
+    const query = this.certificatePatientSearch.trim().toLowerCase();
+    return this.patients().filter(patient => !query || `${this.fullName(patient)} ${patient.patientId}`.toLowerCase().includes(query)).slice(0, 8);
+  });
 
   ngOnInit(): void { if (this.auth.authenticated()) this.bootstrap(); }
   protected submitAuth(): void {
@@ -103,6 +140,7 @@ export class AppComponent implements OnInit {
   protected load(view: View): void {
     if (this.auth.role() === 'PATIENT') return;
     if (view === 'Consultation') return;
+    if (view === 'Medical Certificate') { this.error.set(''); this.ensurePatients(); return; }
     this.error.set(''); this.loading.set(true);
     const request: Observable<any> = view === 'Dashboard' ? this.api.dashboard() : view === 'Appointments' ? this.api.appointments() : view === 'Patients' ? this.api.patients() : view === 'Prescriptions' ? this.api.prescriptions() : view === 'Vaccinations' ? this.api.vaccines() : this.api.users();
     request.subscribe({ next: data => { if (view === 'Dashboard') { const d = data as Dashboard; this.dashboard.set(d); this.appointments.set(d.schedule); } else if (view === 'Appointments') this.appointments.set(data as Appointment[]); else if (view === 'Patients') this.patients.set(data as Patient[]); else if (view === 'Prescriptions') this.prescriptions.set(data as Prescription[]); else if (view === 'Vaccinations') this.vaccines.set(data as Vaccine[]); else this.users.set(data as User[]); }, error: e => this.fail(e), complete: () => this.loading.set(false) });
@@ -133,6 +171,7 @@ export class AppComponent implements OnInit {
     const patient = this.consultationPatient();
     if (!patient) return;
     this.error.set(''); this.selected.set(null);
+    this.vaccinePatientSearch = this.fullName(patient);
     this.vaccineForm = {
       patientId: patient.id,
       vaccineName: '',
@@ -170,9 +209,13 @@ export class AppComponent implements OnInit {
     });
   }
   protected endConsultation(): void {
+    if (!this.consultationAppointment()) return;
+    this.error.set('');
+    this.modal.set('end-consultation');
+  }
+  protected confirmEndConsultation(): void {
     const appointment = this.consultationAppointment();
     if (!appointment) return;
-    if (!confirm('End this consultation and mark the appointment as completed?')) return;
     this.error.set('');
     this.loading.set(true);
     this.api.updateAppointment(appointment.id, { status: 'COMPLETED' }).subscribe({
@@ -180,6 +223,7 @@ export class AppComponent implements OnInit {
         this.consultationAppointment.set(updated);
         this.consultationAppointments.set(this.consultationAppointments().map(item => item.id === updated.id ? updated : item));
         this.appointments.set(this.appointments().map(item => item.id === updated.id ? updated : item));
+        this.modal.set(null);
         this.notice.set('Consultation ended successfully.');
         this.openView('Dashboard');
       },
@@ -209,14 +253,14 @@ export class AppComponent implements OnInit {
       complete: () => this.loading.set(false),
     });
   }
-  protected navItems(): { label: View; icon: string }[] { const role = this.auth.role(); if (role === 'PATIENT') return []; const items: {label: View; icon: string}[] = [{label:'Dashboard',icon:'⌂'},{label:'Appointments',icon:'▣'},{label:'Patients',icon:'♧'}]; if (role !== 'FRONT_DESK') items.push({label:'Prescriptions',icon:'Rx'}); items.push({label:'Vaccinations',icon:'✚'}); if (role === 'ADMIN') items.push({label:'Users',icon:'♙'}); return items; }
+  protected navItems(): { label: View; icon: string }[] { const role = this.auth.role(); if (role === 'PATIENT') return []; const items: {label: View; icon: string}[] = [{label:'Dashboard',icon:'⌂'},{label:'Appointments',icon:'▣'},{label:'Patients',icon:'♧'}]; if (role !== 'FRONT_DESK') items.push({label:'Prescriptions',icon:'Rx'}); items.push({label:'Vaccinations',icon:'✚'}); if (role === 'DOCTOR') items.push({label:'Medical Certificate',icon:'MC'}); if (role === 'ADMIN') items.push({label:'Users',icon:'♙'}); return items; }
   protected canCreate(view: View): boolean { const role = this.auth.role(); if (view === 'Appointments') return role === 'ADMIN' || role === 'FRONT_DESK' || role === 'DOCTOR'; if (view === 'Patients') return role === 'ADMIN' || role === 'FRONT_DESK'; if (view === 'Prescriptions' || view === 'Vaccinations') return role === 'ADMIN' || role === 'DOCTOR' || role === 'NURSE'; return view === 'Users' && role === 'ADMIN'; }
   protected openCreate(kind: Exclude<Modal,'detail'|null>): void {
     this.error.set(''); this.selected.set(null); this.modal.set(kind); const today = new Date().toISOString().slice(0,10);
     if (kind === 'appointment') { this.appointmentForm = { patientId:'', assignedDoctorId:'', date:today, time:'09:00', visitType:'Returning', purpose:'', status:'PENDING', bloodPressure:'', heartRate:'', respiratoryRate:'', bodyTemperatureC:'', oxygenSaturation:'', weightKg:'', heightCm:'' }; this.loadReferences(); }
     if (kind === 'patient') this.patientForm = { firstName:'', lastName:'', dateOfBirth:'', sex:'', mobileNumber:'', emailAddress:'', allergies:'', conditions:'' };
     if (kind === 'prescription') { this.prescriptionPatientSearch = ''; this.additionalMedications = []; this.prescriptionForm = { patientId:'', medication:'', dosage:'', instructions:'', quantity:1, refills:0, notes:'' }; this.ensurePatients(); }
-    if (kind === 'vaccine') { this.vaccineForm = { patientId:'', vaccineName:'', dose:'', dateAdministered:today, manufacturer:'', lotNumber:'', administeredBy:this.fullName(this.auth.currentUser()), status:'COMPLETED' }; this.ensurePatients(); }
+    if (kind === 'vaccine') { this.vaccinePatientSearch = ''; this.vaccineForm = { patientId:'', vaccineName:'', dose:'', dateAdministered:today, manufacturer:'', lotNumber:'', administeredBy:this.fullName(this.auth.currentUser()), status:'COMPLETED' }; this.ensurePatients(); }
     if (kind === 'user') this.userForm = { firstName:'', lastName:'', email:'', password:'', confirmPassword:'', role:'DOCTOR' };
   }
   protected edit(item: any, kind: Exclude<Modal,'detail'|null>): void { this.error.set(''); this.selected.set(item); this.modal.set(kind); if (kind === 'appointment') this.appointmentForm = { patientId:item.patientId, assignedDoctorId:item.doctorId, date:item.date.slice(0,10), time:item.time, visitType:item.visitType, purpose:item.purpose, durationMin:item.durationMin, status:item.status, notes:item.notes ?? '', ...this.patientVitalsForm(item.patient) }; if (kind === 'patient') this.patientForm = {...item, dateOfBirth:item.dateOfBirth.slice(0,10)}; if (kind === 'prescription') { this.additionalMedications = []; this.prescriptionPatientSearch = this.fullName(item.patient); this.prescriptionForm = { patientId:item.patientId, medication:item.medication, dosage:item.dosage, instructions:item.instructions, quantity:item.quantity, refills:item.refills, notes:item.notes ?? '', status:item.status }; } if (kind === 'user') this.userForm = { firstName:item.firstName, lastName:item.lastName, email:item.email, role:item.role, isActive:item.isActive }; this.loadReferences(); }
@@ -224,6 +268,7 @@ export class AppComponent implements OnInit {
     this.error.set(''); const item: any = this.selected(); let call: any;
     if (kind === 'user' && !item && this.userForm.password !== this.userForm.confirmPassword) { this.error.set('Passwords do not match.'); return; }
     if (kind === 'prescription' && !this.prescriptionForm.patientId) { this.error.set('Select a patient from the suggestions.'); return; }
+    if (kind === 'vaccine' && !this.vaccineForm.patientId) { this.error.set('Select a patient from the suggestions.'); return; }
     this.loading.set(true);
     if (kind === 'appointment') {
       const body = this.clean(this.appointmentForm);
@@ -259,6 +304,37 @@ export class AppComponent implements OnInit {
   protected detailIcon(): string { return ({appointment:'▣',prescription:'Rx',vaccine:'✚'} as Record<string,string>)[this.detailKind() ?? ''] ?? '•'; }
   protected fieldLabel(value: string): string { return value.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()); }
   protected resolvePrescriptionPatient(value: string): void { this.prescriptionPatientSearch = value; const normalized = value.trim().toLowerCase(); const patient = this.patients().find(p => this.fullName(p).toLowerCase() === normalized); this.prescriptionForm.patientId = patient?.id ?? ''; }
+  protected resolveVaccinePatient(value: string): void { this.vaccinePatientSearch = value; const normalized = value.trim().toLowerCase(); const patient = this.patients().find(p => this.fullName(p).toLowerCase() === normalized); this.vaccineForm.patientId = patient?.id ?? ''; }
+  protected selectedVaccinePatient(): Patient | undefined { return this.patients().find(patient => patient.id === this.vaccineForm.patientId); }
+  protected certificatePatient(): Patient | undefined { return this.patients().find(patient => patient.id === this.medicalCertificateForm.patientId); }
+  protected resolveCertificatePatient(value: string): void { this.certificatePatientSearch = value; const normalized = value.trim().toLowerCase(); const patient = this.patients().find(item => this.fullName(item).toLowerCase() === normalized || item.patientId.toLowerCase() === normalized); this.medicalCertificateForm.patientId = patient?.id ?? ''; this.certificateSuggestionsOpen.set(true); }
+  protected selectCertificatePatient(patient: Patient): void { this.certificatePatientSearch = this.fullName(patient); this.medicalCertificateForm.patientId = patient.id; this.certificateSuggestionsOpen.set(false); }
+  protected certificateDisplayName(): string { return this.certificatePatient() ? this.fullName(this.certificatePatient()) : this.certificatePatientSearch.trim(); }
+  protected canSaveMedicalCertificate(): boolean {
+    return Boolean(this.certificateDisplayName() && this.medicalCertificateForm.date && this.medicalCertificateForm.details.trim() && !this.loading());
+  }
+  protected saveMedicalCertificate(): void {
+    const patientName = this.certificateDisplayName();
+    const details = this.medicalCertificateForm.details.trim();
+    if (!patientName || !this.medicalCertificateForm.date || !details) {
+      this.error.set('Enter a patient name, date, and certificate details before saving.');
+      return;
+    }
+    this.error.set('');
+    this.notice.set('');
+    this.loading.set(true);
+    this.api.createMedicalCertificate({
+      ...(this.medicalCertificateForm.patientId && { patientId: this.medicalCertificateForm.patientId }),
+      patientName,
+      certificateDate: this.medicalCertificateForm.date,
+      details,
+    }).subscribe({
+      next: () => this.notice.set('Medical certificate saved successfully.'),
+      error: e => this.fail(e),
+      complete: () => this.loading.set(false),
+    });
+  }
+  protected printMedicalCertificate(): void { if (!this.certificatePatientSearch.trim() || !this.medicalCertificateForm.details.trim()) { this.error.set('Enter a patient name and the certificate details before printing.'); return; } document.body.classList.add('printing-medical-certificate'); window.addEventListener('afterprint', () => document.body.classList.remove('printing-medical-certificate'), { once:true }); window.print(); }
   protected selectedPrescriptionPatient(): Patient | undefined { return this.patients().find(p => p.id === this.prescriptionForm.patientId); }
   protected addMedication(): void { this.additionalMedications.push({ medication:'', dosage:'', instructions:'', quantity:1, refills:0, notes:'' }); }
   protected removeMedication(index: number): void { this.additionalMedications.splice(index, 1); }
